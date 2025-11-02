@@ -10,5 +10,5 @@ import Perpuskaan.demo.entity.Buku;
 @Repository
 public interface BukuRepository extends JpaRepository<Buku, Integer> {
     List<Buku> findByJudul(String judul);
-    List<Buku> findByPenulis(String namaPenulis);
+    List<Buku> findByPengarang(String pengarang);
 }
