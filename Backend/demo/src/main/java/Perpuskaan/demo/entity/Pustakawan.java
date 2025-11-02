@@ -1,20 +1,17 @@
 package Perpuskaan.demo.entity;
 
-public class Pustakawan {
-    private int idPustakawan;
-    private String namaPustakawan;
-    private String passwordPustakawan;
-    private String pustakawanEmail;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-    public Pustakawan(){
+@Data
+@EqualsAndHashCode(callSuper = true) // Penting untuk inheritance
+@Entity
+@DiscriminatorValue("PUSTAKAWAN") // Jika role='PUSTAKAWAN', ini adalah objek Pustakawan
+public class Pustakawan extends User {
 
-    }
-    public Pustakawan (int idPustakawan, String namaPustakawan, String passwordPustakawan, String pustakawanEmail){
-        this.idPustakawan = idPustakawan;
-        this.namaPustakawan = namaPustakawan;
-        this.passwordPustakawan = passwordPustakawan;
-        this.pustakawanEmail = pustakawanEmail;
-    }
-
+    private String nip;
+    private String jabatan;
     
 }
