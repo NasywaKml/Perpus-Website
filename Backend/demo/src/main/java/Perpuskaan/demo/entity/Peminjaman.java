@@ -1,10 +1,14 @@
 package Perpuskaan.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
 import java.util.Date;
 
-@Data
+@Getter // Hanya generate getter
+@Setter // Hanya generate setter
+@NoArgsConstructor
 @Entity
 @Table(name = "peminjaman")
 public class Peminjaman {
