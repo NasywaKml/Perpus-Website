@@ -2,13 +2,16 @@ package Perpuskaan.demo.entity;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter; // Import
+import lombok.NoArgsConstructor; // Import
+import lombok.Setter; // Import
 
-@Data
-@EqualsAndHashCode(callSuper = true) // Penting untuk inheritance
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@DiscriminatorValue("PUSTAKAWAN") // Jika role='PUSTAKAWAN', ini adalah objek Pustakawan
+@DiscriminatorValue("PUSTAKAWAN") // Jika role='PEMUSTAKA'
 public class Pustakawan extends User {
 
     private String nip;
