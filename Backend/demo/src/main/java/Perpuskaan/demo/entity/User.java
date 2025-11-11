@@ -1,13 +1,26 @@
 package Perpuskaan.demo.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn; // Import
+import jakarta.persistence.Entity; // Import
+import jakarta.persistence.GeneratedValue; // Import
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+// HAPUS @Data
 
-@Data
+@Getter // <-- Ganti
+@Setter // <-- Ganti
+@NoArgsConstructor // <-- Ganti
 @Entity
-@Table(name = "users") // Semua disimpan di satu tabel bernama 'users'
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Strategi pewarisan
-@DiscriminatorColumn(name = "role", discriminatorType = DiscriminatorType.STRING) // Kolom yang membedakan
+@Table(name = "users") // Nama tabel Anda mungkin beda
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "role") // Ini nama kolom pembedanya
 public abstract class User {
 
     @Id
