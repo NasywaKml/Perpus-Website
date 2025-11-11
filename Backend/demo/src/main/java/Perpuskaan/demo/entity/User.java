@@ -1,9 +1,8 @@
 package Perpuskaan.demo.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn; // Import
-import jakarta.persistence.Entity; // Import
-import jakarta.persistence.GeneratedValue; // Import
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
@@ -12,15 +11,14 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-// HAPUS @Data
 
-@Getter // <-- Ganti
-@Setter // <-- Ganti
-@NoArgsConstructor // <-- Ganti
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table(name = "users") // Nama tabel Anda mungkin beda
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "role") // Ini nama kolom pembedanya
+@Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED) // <-- Ini sudah benar
+// @DiscriminatorColumn(name = "role") // <-- HAPUS BARIS INI
 public abstract class User {
 
     @Id
@@ -35,14 +33,9 @@ public abstract class User {
 
     @Column(nullable = false)
     private String password;
-
     
     private String alamat;
     private String noTelpon;
 
-    public String getPassword(){
-        return password;
-    }
-
-    
+   
 }
