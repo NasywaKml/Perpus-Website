@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
@@ -39,7 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() 
                 
                 // (Opsional) Izinkan endpoint lain jika ada (misal: lihat buku)
-                // .requestMatchers("/api/buku/public/**").permitAll()
+                .requestMatchers("/api/buku/**").permitAll()
                 
                 // Semua request LAINNYA harus diautentikasi (login)
                 .anyRequest().authenticated()
