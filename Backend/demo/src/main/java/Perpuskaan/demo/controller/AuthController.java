@@ -1,12 +1,19 @@
 package Perpuskaan.demo.controller;
 
-import Perpuskaan.demo.dto.*;
-import Perpuskaan.demo.entity.User;
-import Perpuskaan.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*; // Pastikan import @RestController dll ada
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import Perpuskaan.demo.dto.LoginRequest;
+import Perpuskaan.demo.dto.RegisterRequest; // Pastikan import @RestController dll ada
+import Perpuskaan.demo.entity.Pemustaka;
+import Perpuskaan.demo.entity.User;
+import Perpuskaan.demo.service.UserService;
+import jakarta.validation.Valid;
 
 @RestController // <-- 1. PINDAHKAN KE SINI (DI LUAR KELAS)
 @RequestMapping("/api/auth") // <-- 2. PINDAHKAN KE SINI, dan ganti nilainya
@@ -49,5 +56,19 @@ public class AuthController { // <-- 3. HANYA DEKLARASI KELAS SATU KALI
     public ResponseEntity<String> logout() {
         // (Lihat catatan logout di percakapan sebelumnya)
         return ResponseEntity.ok("Logout berhasil");
+    }
+    @PostMapping("/register")
+    public ResponseEntity<?> registerPemustaka(@Valid @RequestBody RegisterRequest registerRequest) {
+        // @Valid akan memicu validasi di DTO
+        // @RequestBody akan membaca JSON dari body request
+        
+        try {
+            Pemustaka newUser = userService.registerPemustaka(registerRequest);
+            // Jika sukses, kembalikan status 201 Created
+            return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+        } catch (RuntimeException e) {
+            // Jika gagal (misal: username sudah ada), kembalikan status 400 Bad Request
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
