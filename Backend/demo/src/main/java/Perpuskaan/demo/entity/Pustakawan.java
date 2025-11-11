@@ -1,20 +1,20 @@
 package Perpuskaan.demo.entity;
 
-public class Pustakawan {
-    private int idPustakawan;
-    private String namaPustakawan;
-    private String passwordPustakawan;
-    private String pustakawanEmail;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import lombok.Getter; // Import
+import lombok.NoArgsConstructor; // Import
+import lombok.Setter; // Import
 
-    public Pustakawan(){
 
-    }
-    public Pustakawan (int idPustakawan, String namaPustakawan, String passwordPustakawan, String pustakawanEmail){
-        this.idPustakawan = idPustakawan;
-        this.namaPustakawan = namaPustakawan;
-        this.passwordPustakawan = passwordPustakawan;
-        this.pustakawanEmail = pustakawanEmail;
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@DiscriminatorValue("PUSTAKAWAN") // Jika role='PEMUSTAKA'
+public class Pustakawan extends User {
 
+    private String nip;
+    private String jabatan;
     
 }
