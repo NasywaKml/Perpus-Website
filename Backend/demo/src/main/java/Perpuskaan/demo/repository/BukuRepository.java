@@ -10,5 +10,10 @@ import Perpuskaan.demo.entity.Buku;
 @Repository
 public interface BukuRepository extends JpaRepository<Buku, Integer> {
     List<Buku> findByJudul(String judul);
+<<<<<<< Updated upstream
     List<Buku> findByPengarang(String pengarang);
+=======
+    
+    List<Buku> findByPengarang(String namaPengarang);
+>>>>>>> Stashed changes
 }
