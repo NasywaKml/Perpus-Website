@@ -1,16 +1,15 @@
 package Perpuskaan.demo.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder; // Import
-import org.springframework.stereotype.Service;
+// import java.util.UUID; // <-- HAPUS IMPORT INI
 
+import org.springframework.beans.factory.annotation.Autowired; 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service; 
 
-import Perpuskaan.demo.dto.RegisterRequest; // Import DTO
+import Perpuskaan.demo.dto.RegisterRequest;
 import Perpuskaan.demo.entity.Pemustaka;
 import Perpuskaan.demo.entity.User;
 import Perpuskaan.demo.repository.UserRepository;
-
-import java.util.UUID; // Untuk generate noAnggota
 
 @Service
 public class UserService {
@@ -18,19 +17,16 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     
-    // 1. Inject PasswordEncoder
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Metode untuk login (Versi Sederhana).
-     * CATATAN: Ini harus di-update untuk menggunakan passwordEncoder.
+     * Metode untuk login
      */
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Username tidak ditemukan"));
 
-        // 2. Cek password dengan passwordEncoder
         if (passwordEncoder.matches(password, user.getPassword())) {
             return user; // Login sukses
         } else {
@@ -39,7 +35,7 @@ public class UserService {
     }
 
     /**
-     * Metode untuk mendaftarkan Pemustaka baru menggunakan DTO.
+     * Metode untuk mendaftarkan Pemustaka baru
      */
     public Pemustaka registerPemustaka(RegisterRequest request) {
         // 1. Cek apakah username sudah ada
@@ -61,9 +57,12 @@ public class UserService {
         
         // 5. Set nilai default
         pemustaka.setStatusKeanggotaan("Aktif");
-        pemustaka.setNoAnggota(generateNoAnggota()); // Panggil helper
         
-        // 6. Simpan ke database
+        // 6. HAPUS BARIS 'setNoAnggota'
+        // pemustaka.setNoAnggota(generateNoAnggota()); // <-- HAPUS INI
+        // Database akan mengisinya secara otomatis (AUTO_INCREMENT = 1000)
+        
+        // 7. Simpan ke database
         return userRepository.save(pemustaka);
     }
     
@@ -75,15 +74,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
     }
 
-    // --- Helper Method ---
-    
-    /**
-     * Helper sederhana untuk membuat Nomor Anggota unik.
-     * (Dalam aplikasi nyata, ini bisa lebih kompleks, misal: "P" + Tahun + urutan)
-     */
+    // --- HAPUS SELURUH METHOD generateNoAnggota ---
+    /*
     private String generateNoAnggota() {
-        // Contoh: "ANGGOTA-8d8f8a8-4e4b-4a4a-..."
-        return "ANGGOTA-" + UUID.randomUUID().toString().substring(0, 8);
+        // ...
     }
-
+    */
 }

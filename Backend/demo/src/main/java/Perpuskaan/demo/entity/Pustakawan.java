@@ -1,14 +1,20 @@
 package Perpuskaan.demo.entity;
 
-import jakarta.persistence.DiscriminatorValue;
+// import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
+import lombok.Getter; // Import
+import lombok.NoArgsConstructor; // Import
+import lombok.Setter; // Import
 
-@Data
-@EqualsAndHashCode(callSuper = true) // Penting untuk inheritance
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@DiscriminatorValue("PUSTAKAWAN") // Jika role='PUSTAKAWAN', ini adalah objek Pustakawan
+@Table(name = "pustakawan") // <-- Tentukan nama tabel
+@PrimaryKeyJoinColumn(name = "id_user") // Jika role='PEMUSTAKA'
 public class Pustakawan extends User {
 
     private String nip;
