@@ -1,4 +1,4 @@
-package Perpuskaan.demo.config; // Anda mungkin perlu membuat package config
+package Perpuskaan.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -17,50 +16,35 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Menggunakan BCrypt untuk hashing password
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
-    @Bean 
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Nonaktifkan CSRF: Wajib untuk API/Postman
             .csrf(csrf -> csrf.disable())
-            
-            // Pengaturan otorisasi (perizinan)
-            .authorizeHttpRequests(authz -> authz
-                // Izinkan (permitAll) semua request ke /api/auth/**
-                // Ini PENTING agar login & register Anda tidak diblokir
-                .requestMatchers("/api/auth/**").permitAll() 
-                
-                // (Opsional) Izinkan endpoint lain jika ada (misal: lihat buku)
-                // .requestMatchers("/api/buku/public/**").permitAll()
-                
-                // Semua request LAINNYA harus diautentikasi (login)
+
+            // -------------------------------
+            //  🚀 FIX CORS UNTUK VUE (5173)
+            // -------------------------------
+            .cors(cors -> cors.configurationSource(request -> {
+                var config = new org.springframework.web.cors.CorsConfiguration();
+                config.setAllowCredentials(true);
+                config.addAllowedOrigin("http://localhost:5173");
+                config.addAllowedHeader("*");
+                config.addAllowedMethod("*");
+                return config;
+            }))
+
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
-            )
-
-            .logout(logout -> logout
-                // 1. Tentukan URL untuk trigger logout
-                .logoutUrl("/api/auth/logout") 
-
-                // 2. Apa yang terjadi setelah logout sukses
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    response.setContentType("application/json");
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("{\"message\": \"Logout berhasil!\"}");
-                })
-                
-                // 3. Hapus cookie JSESSIONID saat logout
-                .deleteCookies("JSESSIONID") 
-                
-                // 4. Pastikan sesi HTTP-nya benar-benar di-invalidate
-                .invalidateHttpSession(true) 
             );
 
         return http.build();
