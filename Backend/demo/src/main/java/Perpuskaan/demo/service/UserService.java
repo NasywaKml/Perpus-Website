@@ -2,9 +2,9 @@ package Perpuskaan.demo.service;
 
 // import java.util.UUID; // <-- HAPUS IMPORT INI
 
-import org.springframework.beans.factory.annotation.Autowired; 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service; 
+import org.springframework.stereotype.Service;
 
 import Perpuskaan.demo.dto.RegisterRequest;
 import Perpuskaan.demo.entity.Pemustaka;
