@@ -37,8 +37,5 @@ public abstract class User {
     private String alamat;
     private String noTelpon;
 
-    // HAPUS METHOD MANUAL INI (KARENA SUDAH ADA DARI @Getter)
-    // public String getPassword(){
-    //     return password;
-    // }
+   
 }
