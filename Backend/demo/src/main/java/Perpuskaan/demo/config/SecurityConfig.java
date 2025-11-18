@@ -1,16 +1,22 @@
-package Perpuskaan.demo.config; // Anda mungkin perlu membuat package config
+package Perpuskaan.demo.config;
+
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // <-- IMPORT BARU
 
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse; // <-- IMPORT BARU
 
 @Configuration
 @EnableWebSecurity
@@ -18,7 +24,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Menggunakan BCrypt untuk hashing password
         return new BCryptPasswordEncoder();
     }
 
@@ -27,40 +32,59 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    // =================================================================================
+    // TAMBAHAN BARU: Bean Konfigurasi CORS
+    // =================================================================================
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 1. Izinkan origin frontend Anda
+        configuration.setAllowedOrigins(List.of("http://localhost:5173")); 
+        
+        // 2. Izinkan semua method (GET, POST, PUT, DELETE, etc.)
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
+        
+        // 3. Izinkan semua header (seperti Content-Type, Authorization)
+        configuration.setAllowedHeaders(List.of("*")); 
+        
+        // 4. Izinkan kredensial (penting untuk cookie/session/login)
+        configuration.setAllowCredentials(true); 
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Terapkan konfigurasi ini untuk semua path di aplikasi Anda
+        source.registerCorsConfiguration("/**", configuration); 
+        return source;
+    }
+    // =================================================================================
+
+
     @Bean 
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Nonaktifkan CSRF: Wajib untuk API/Postman
+            // Nonaktifkan CSRF
             .csrf(csrf -> csrf.disable())
             
+            // =================================================================
+            // TAMBAHAN BARU: Terapkan Konfigurasi CORS yang kita buat di atas
+            .cors(withDefaults())
+            // =================================================================
+
             // Pengaturan otorisasi (perizinan)
             .authorizeHttpRequests(authz -> authz
-                // Izinkan (permitAll) semua request ke /api/auth/**
-                // Ini PENTING agar login & register Anda tidak diblokir
                 .requestMatchers("/api/auth/**").permitAll() 
-                
-                // (Opsional) Izinkan endpoint lain jika ada (misal: lihat buku)
                 .requestMatchers("/api/buku/**").permitAll()
-                
-                // Semua request LAINNYA harus diautentikasi (login)
                 .anyRequest().authenticated()
             )
 
             .logout(logout -> logout
-                // 1. Tentukan URL untuk trigger logout
                 .logoutUrl("/api/auth/logout") 
-
-                // 2. Apa yang terjadi setelah logout sukses
                 .logoutSuccessHandler((request, response, authentication) -> {
                     response.setContentType("application/json");
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("{\"message\": \"Logout berhasil!\"}");
                 })
-                
-                // 3. Hapus cookie JSESSIONID saat logout
                 .deleteCookies("JSESSIONID") 
-                
-                // 4. Pastikan sesi HTTP-nya benar-benar di-invalidate
                 .invalidateHttpSession(true) 
             );
 
