@@ -1,66 +1,59 @@
 package Perpuskaan.demo.controller;
 
+import java.util.List;
 
-import Perpuskaan.demo.entity.Buku;
-import Perpuskaan.demo.service.BukuService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
+import Perpuskaan.demo.dto.response.BukuSearchResponseDto;
+import Perpuskaan.demo.service.BukuService;
 
 @RestController
-@RequestMapping("/api/buku") // Base URL untuk semua endpoint di controller ini
+@RequestMapping("/api/buku") // Base URL: localhost:8080/api/buku
+@CrossOrigin(origins = "*")  // PENTING: Biar bisa diakses dari Frontend (Vue/React)
 public class BukuController {
 
-    @Autowired
-    private BukuService bukuService;
+    private final BukuService bukuService;
 
-    // API untuk mengambil SEMUA data buku
-    // URL: GET http://localhost:8080/api/buku/all
-    @GetMapping("/all")
-    public ResponseEntity<List<Buku>> getAllBuku() {
-        List<Buku> bukuList = bukuService.getAllBuku();
-        return ResponseEntity.ok(bukuList); // Respon 200 OK
+    // Constructor Injection (Best Practice daripada @Autowired di field)
+    public BukuController(BukuService bukuService) {
+        this.bukuService = bukuService;
     }
 
-    // API untuk mengambil SATU buku berdasarkan ID
-    // URL: GET http://localhost:8080/api/buku/1 (angka 1 adalah contoh id)
+    // ==========================================
+    // 1. GET ALL BUKU
+    // URL: GET localhost:8080/api/buku
+    // ==========================================
+    @GetMapping
+    public ResponseEntity<List<BukuSearchResponseDto>> getAllBuku() {
+        List<BukuSearchResponseDto> result = bukuService.getAllBuku();
+        return ResponseEntity.ok(result);
+    }
+
+    // ==========================================
+    // 2. SEARCH BUKU (By Judul OR Pengarang)
+    // URL: GET localhost:8080/api/buku/search?keyword=harry
+    // ==========================================
+    @GetMapping("/search")
+    public ResponseEntity<List<BukuSearchResponseDto>> searchBuku(
+            @RequestParam("keyword") String keyword) {
+        
+        List<BukuSearchResponseDto> result = bukuService.searchBuku(keyword);
+        return ResponseEntity.ok(result);
+    }
+
+    // ==========================================
+    // 3. GET DETAIL BUKU (By ID)
+    // URL: GET localhost:8080/api/buku/1
+    // ==========================================
     @GetMapping("/{id}")
-    public ResponseEntity<Buku> getBukuById(@PathVariable Integer id) {
-        Optional<Buku> buku = bukuService.getBukuById(id);
-        return buku.<ResponseEntity<Buku>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    
-    // API untuk mencari buku berdasarkan Judul
-    // URL: GET http://localhost:8080/api/buku/judul/Laskar Pelangi
-    @GetMapping("/judul/{judul}")
-    public ResponseEntity<List<Buku>> getBukuByJudul(@PathVariable String judul) {
-        List<Buku> bukuList = bukuService.getBukuByJudul(judul);
-        return ResponseEntity.ok(bukuList);
-    }
-
-    // API untuk mencari buku berdasarkan Pengarang
-    // URL: GET http://localhost:8080/api/buku/pengarang/Andrea Hirata
-    @GetMapping("/pengarang/{namaPengarang}")
-    public ResponseEntity<List<Buku>> getBukuByPengarang(@PathVariable String namaPengarang) {
-        List<Buku> bukuList = bukuService.getBukuByPengarang(namaPengarang);
-        return ResponseEntity.ok(bukuList);
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<Buku> addBuku(@RequestBody Buku buku) {
-        Buku bukuBaru = bukuService.createBuku(buku);
-        // Kembalikan 201 CREATED + data buku yang baru dibuat
-        return new ResponseEntity<>(bukuBaru, HttpStatus.CREATED);
+    public ResponseEntity<BukuSearchResponseDto> getBukuById(@PathVariable Integer id) {
+        BukuSearchResponseDto result = bukuService.getBukuById(id);
+        return ResponseEntity.ok(result);
     }
 }
