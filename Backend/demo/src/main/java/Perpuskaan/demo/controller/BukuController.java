@@ -9,9 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 
 import Perpuskaan.demo.dto.response.BukuSearchResponseDto;
 import Perpuskaan.demo.service.BukuService;
+import Perpuskaan.demo.dto.request.BukuCreateRequestDto;
+import Perpuskaan.demo.dto.request.BukuStockUpdateRequestDto;
 
 @RestController
 @RequestMapping("/api/buku") // Base URL: localhost:8080/api/buku
@@ -67,7 +73,26 @@ public class BukuController {
         return ResponseEntity.ok(bukuService.getAllBukuByKategori(kategori));
     }
 
+    // ==========================================
+    // 5. CREATE BUKU
+    // URL: POST localhost:8080/api/buku
+    // ==========================================
+    @PostMapping
+    public ResponseEntity<BukuSearchResponseDto> createBuku(
+            @Valid @RequestBody BukuCreateRequestDto request) {
+        return ResponseEntity.ok(bukuService.createBuku(request));
+    }
 
+    // ==========================================
+    // 6. ADJUST STOK BUKU
+    // URL: PATCH localhost:8080/api/buku/{id}/stok
+    // ==========================================
+    @PatchMapping("/{id}/stok")
+    public ResponseEntity<BukuSearchResponseDto> adjustStok(
+            @PathVariable Integer id,
+            @Valid @RequestBody BukuStockUpdateRequestDto request) {
+        return ResponseEntity.ok(bukuService.adjustStok(id, request.getDelta()));
+    }
 
 
 }

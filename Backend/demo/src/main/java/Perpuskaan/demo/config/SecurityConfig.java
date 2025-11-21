@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/buku/kategori/*").permitAll()
                 .requestMatchers("/api/buku/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/buku/**").permitAll() //memastikan patch bisa diakses
                 .requestMatchers("/api/auth/**").permitAll() 
                 
                 .anyRequest().authenticated()
