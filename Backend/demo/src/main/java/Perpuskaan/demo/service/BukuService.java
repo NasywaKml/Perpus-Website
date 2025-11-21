@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import Perpuskaan.demo.dto.response.BukuSearchResponseDto;
 import Perpuskaan.demo.entity.Buku; // Penting buat database transaction
 import Perpuskaan.demo.repository.BukuRepository; // Kalau mau pake object request
+import Perpuskaan.demo.dto.request.BukuCreateRequestDto;
+import Perpuskaan.demo.dto.request.BukuStockUpdateRequestDto;
 
 @Service
 @Transactional // Menjaga konsistensi data database
@@ -87,7 +89,32 @@ public class BukuService {
 
         return responseList;
     }
+    // ==========================================
+    // FITUR 5: Create Buku
+    // ==========================================
+    public BukuSearchResponseDto createBuku(BukuCreateRequestDto request) {
+        Buku bukuBaru = new Buku();
+        bukuBaru.setJudul(request.getJudul());
+        bukuBaru.setIsbn(request.getIsbn());
+        // set the rest...
+        bukuBaru.setJumlahStok(request.getJumlahStok());
+        Buku saved = bukuRepository.save(bukuBaru);
+        return convertToDto(saved);
+    }
 
+    // ==========================================
+    // FITUR 6: Adjust Stok Buku
+    // ==========================================
+    public BukuSearchResponseDto adjustStok(Integer idBuku, int delta) {
+        Buku buku = bukuRepository.findById(idBuku)
+            .orElseThrow(() -> new RuntimeException("Buku dengan ID " + idBuku + " tidak ditemukan"));
+        int stokBaru = buku.getJumlahStok() + delta;
+        if (stokBaru < 0) {
+            throw new IllegalArgumentException("Jumlah stok tidak boleh negatif");
+        }
+        buku.setJumlahStok(stokBaru);
+        return convertToDto(buku); // entity is managed; no explicit save() needed but call if preferred
+    }
 
     // ==========================================
     // HELPER: Convert Entity -> DTO (Manual Setter)
