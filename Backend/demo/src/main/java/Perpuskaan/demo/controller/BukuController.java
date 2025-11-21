@@ -49,11 +49,25 @@ public class BukuController {
 
     // ==========================================
     // 3. GET DETAIL BUKU (By ID)
-    // URL: GET localhost:8080/api/buku/1
+    // URL: GET localhost:8080/api/buku/{1}
     // ==========================================
     @GetMapping("/{id}")
     public ResponseEntity<BukuSearchResponseDto> getBukuById(@PathVariable Integer id) {
         BukuSearchResponseDto result = bukuService.getBukuById(id);
         return ResponseEntity.ok(result);
     }
+
+    // ==========================================
+    // 4. GET ALL BUKU BY KATEGORI
+    // URL: GET   
+    // ==========================================
+    @GetMapping("/kategori/{kategori}")
+    public ResponseEntity<List<BukuSearchResponseDto>> getByKategori(
+            @PathVariable String kategori) {
+        return ResponseEntity.ok(bukuService.getAllBukuByKategori(kategori));
+    }
+
+
+
+
 }
