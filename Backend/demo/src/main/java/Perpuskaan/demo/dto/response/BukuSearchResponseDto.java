@@ -1,6 +1,5 @@
 package Perpuskaan.demo.dto.response;
 
-import java.util.Date;
 
 import lombok.Data;
 // import lombok.Getter;
@@ -12,11 +11,15 @@ public class BukuSearchResponseDto {
     private String isbn;
     private String kategori;
     private String pengarang;
-    private Date tahunTerbit;
+    private String penerbit;
+    private Integer tahunTerbit;
     private String jenis;
     private String noRak;
     private String abstrak;
     private Integer jumlahStok;
+    private Double hargaSewa;
+    private Double dendaPerHari;
+    private String status;
     private String urlGambarSampul;
 
 }
