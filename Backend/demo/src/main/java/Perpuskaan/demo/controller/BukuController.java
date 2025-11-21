@@ -77,10 +77,20 @@ public class BukuController {
     // 5. CREATE BUKU
     // URL: POST localhost:8080/api/buku
     // ==========================================
-    @PostMapping
-    public ResponseEntity<BukuSearchResponseDto> createBuku(
+     @PostMapping
+    public ResponseEntity<?> createBuku(
             @Valid @RequestBody BukuCreateRequestDto request) {
-        return ResponseEntity.ok(bukuService.createBuku(request));
+        try {
+            return ResponseEntity.ok(bukuService.createBuku(request));
+        } catch (Exception e) {
+            System.err.println("=== ERROR di BukuController.createBuku() ===");
+            System.err.println("Exception type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                "{\"error\": \"" + e.getMessage() + "\", \"type\": \"" + e.getClass().getSimpleName() + "\"}"
+            );
+        }
     }
 
     // ==========================================

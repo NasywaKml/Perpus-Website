@@ -1,7 +1,5 @@
 package Perpuskaan.demo.dto.request;
 
-import java.util.Date;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -21,7 +19,7 @@ public class BukuCreateRequestDto {
     private String penerbit;
 
     @NotNull
-    private Date tahunTerbit;
+    private Integer tahunTerbit;
 
     private String jenis;
 
@@ -33,6 +31,10 @@ public class BukuCreateRequestDto {
     private Integer jumlahStok;
 
     private Double hargaSewa;
+
+    private Double dendaPerHari;
+
+    private String status;
 
     private String urlGambarSampul;
 }

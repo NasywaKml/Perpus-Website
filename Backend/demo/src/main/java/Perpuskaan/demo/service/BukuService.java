@@ -93,13 +93,33 @@ public class BukuService {
     // FITUR 5: Create Buku
     // ==========================================
     public BukuSearchResponseDto createBuku(BukuCreateRequestDto request) {
-        Buku bukuBaru = new Buku();
-        bukuBaru.setJudul(request.getJudul());
-        bukuBaru.setIsbn(request.getIsbn());
-        // set the rest...
-        bukuBaru.setJumlahStok(request.getJumlahStok());
-        Buku saved = bukuRepository.save(bukuBaru);
-        return convertToDto(saved);
+        try {
+            Buku bukuBaru = new Buku();
+            
+            // Set semua field dari request
+            bukuBaru.setJudul(request.getJudul());
+            bukuBaru.setIsbn(request.getIsbn());
+            bukuBaru.setKategori(request.getKategori());
+            bukuBaru.setPengarang(request.getPengarang());
+            bukuBaru.setPenerbit(request.getPenerbit());
+            bukuBaru.setTahunTerbit(request.getTahunTerbit());
+            bukuBaru.setJenis(request.getJenis());
+            bukuBaru.setNoRak(request.getNoRak());
+            bukuBaru.setAbstrak(request.getAbstrak());
+            bukuBaru.setJumlahStok(request.getJumlahStok());
+            bukuBaru.setHargaSewa(request.getHargaSewa());
+            bukuBaru.setDendaPerHari(request.getDendaPerHari());
+            bukuBaru.setStatus(request.getStatus());
+            bukuBaru.setUrlGambarSampul(request.getUrlGambarSampul());
+            
+            Buku saved = bukuRepository.save(bukuBaru);
+            return convertToDto(saved);
+        } catch (Exception e) {
+            System.err.println("ERROR di createBuku(): " + e.getClass().getSimpleName());
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Gagal membuat buku: " + e.getMessage(), e);
+        }
     }
 
     // ==========================================
@@ -125,24 +145,18 @@ public class BukuService {
 
         dto.setJudul(buku.getJudul());
         dto.setIsbn(buku.getIsbn());
+        dto.setKategori(buku.getKategori());
         dto.setPengarang(buku.getPengarang());
+        dto.setPenerbit(buku.getPenerbit());
         dto.setTahunTerbit(buku.getTahunTerbit());
+        dto.setJenis(buku.getJenis());
         dto.setNoRak(buku.getNoRak());
         dto.setAbstrak(buku.getAbstrak());
-        dto.setJumlahStok(buku.getJumlahStok()); // Asumsi field ini ada di Entity Buku
+        dto.setJumlahStok(buku.getJumlahStok());
+        dto.setHargaSewa(buku.getHargaSewa());
+        dto.setDendaPerHari(buku.getDendaPerHari());
+        dto.setStatus(buku.getStatus());
         dto.setUrlGambarSampul(buku.getUrlGambarSampul());
-        
-        // Khusus untuk Kategori dan Jenis (Kalau di Entity pake relasi Object)
-        // Pastikan entity Buku punya getter yang sesuai.
-        // Contoh Logika Safety (Biar gak Null Pointer Exception):
-        
-        // if (buku.getKategori() != null) {
-        //     dto.setKategori(buku.getKategori().getNamaKategori());
-        // } else {
-             dto.setKategori(buku.getKategori()); // Kalau di entity string biasa
-        // }
-
-        dto.setJenis(buku.getJenis());
 
         return dto;
     }
