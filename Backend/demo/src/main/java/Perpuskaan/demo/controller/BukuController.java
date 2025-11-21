@@ -67,7 +67,26 @@ public class BukuController {
         return ResponseEntity.ok(bukuService.getAllBukuByKategori(kategori));
     }
 
+    // ==========================================
+    // 5. CREATE BUKU
+    // URL: POST localhost:8080/api/buku
+    // ==========================================
+    @PostMapping
+    public ResponseEntity<BukuSearchResponseDto> createBuku(
+            @Valid @RequestBody BukuCreateRequestDto request) {
+        return ResponseEntity.ok(bukuService.createBuku(request));
+    }
 
+    // ==========================================
+    // 6. ADJUST STOK BUKU
+    // URL: PATCH localhost:8080/api/buku/{id}/stok
+    // ==========================================
+    @PatchMapping("/{id}/stok")
+    public ResponseEntity<BukuSearchResponseDto> adjustStok(
+            @PathVariable Integer id,
+            @Valid @RequestBody BukuStockUpdateRequestDto request) {
+        return ResponseEntity.ok(bukuService.adjustStok(id, request.getDelta()));
+    }
 
 
 }
