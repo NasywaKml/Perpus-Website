@@ -9,9 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 
 import Perpuskaan.demo.dto.response.BukuSearchResponseDto;
 import Perpuskaan.demo.service.BukuService;
+import Perpuskaan.demo.dto.request.BukuCreateRequestDto;
+import Perpuskaan.demo.dto.request.BukuStockUpdateRequestDto;
 
 @RestController
 @RequestMapping("/api/buku") // Base URL: localhost:8080/api/buku
