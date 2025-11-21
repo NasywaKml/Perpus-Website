@@ -1,14 +1,13 @@
 package Perpuskaan.demo.repository;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import Perpuskaan.demo.entity.Peminjaman;
-import Perpuskaan.demo.entity.Pemustaka;
 
 import java.util.List;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import Perpuskaan.demo.entity.Peminjaman;
+
 public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer> {
-    List<Peminjaman> findByPemustaka(Pemustaka pemustaka);
-    List<Peminjaman> findByStatus(String status);
+    
+    // Cari semua data, dimana Pemustaka -> IdUser = ?
+    List<Peminjaman> findByPemustaka_IdUser(Integer idUser);
 }

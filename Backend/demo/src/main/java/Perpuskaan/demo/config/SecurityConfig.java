@@ -67,6 +67,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/peminjaman/**").permitAll()
                 .requestMatchers("/api/buku/kategori/*").permitAll()
                 .requestMatchers("/api/buku/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
