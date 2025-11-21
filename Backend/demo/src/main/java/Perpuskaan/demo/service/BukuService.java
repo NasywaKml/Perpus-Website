@@ -75,6 +75,21 @@ public class BukuService {
     }
 
     // ==========================================
+    // FITUR 4: Get All Buku (by Kategori)
+    // ==========================================
+    public List<BukuSearchResponseDto> getAllBukuByKategori(String kategori) {
+        List<Buku> bukuKategori = bukuRepository.findByKategori(kategori);
+
+        List<BukuSearchResponseDto> responseList = new ArrayList<>();
+        for (Buku buku : bukuKategori) {
+            responseList.add(convertToDto(buku));
+        }
+
+        return responseList;
+    }
+
+
+    // ==========================================
     // HELPER: Convert Entity -> DTO (Manual Setter)
     // ==========================================
     // Method ini dibuat private biar bisa dipanggil ulang oleh method search, get all, dll.

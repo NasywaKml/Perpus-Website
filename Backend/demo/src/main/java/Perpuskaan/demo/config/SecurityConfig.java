@@ -66,6 +66,8 @@ public class SecurityConfig {
             .cors(withDefaults())
 
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/buku/kategori/*").permitAll()
                 .requestMatchers("/api/buku/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll() 
