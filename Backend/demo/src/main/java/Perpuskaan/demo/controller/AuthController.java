@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import Perpuskaan.demo.dto.LoginRequest;
+import Perpuskaan.demo.dto.LoginResponse;
 import Perpuskaan.demo.dto.RegisterRequest; // Pastikan import @RestController dll ada
 import Perpuskaan.demo.entity.Pemustaka;
 import Perpuskaan.demo.entity.User;
@@ -32,16 +33,13 @@ public class AuthController { // <-- 3. HANYA DEKLARASI KELAS SATU KALI
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // Panggil service login yang kita buat sebelumnya
-            User user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+            // Panggil service yang sekarang mereturn paket lengkap (Token + User)
+            LoginResponse response = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
 
-            // SANGAT PENTING: Jangan pernah kirim password kembali ke client
-            user.setPassword(null); 
-
-            return ResponseEntity.ok(user);
+            // Kirim balik ke client
+            return ResponseEntity.ok(response);
             
         } catch (RuntimeException e) {
-            // Jika username/password salah, kirim error Unauthorized
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Login Gagal: " + e.getMessage());
@@ -57,6 +55,7 @@ public class AuthController { // <-- 3. HANYA DEKLARASI KELAS SATU KALI
         // (Lihat catatan logout di percakapan sebelumnya)
         return ResponseEntity.ok("Logout berhasil");
     }
+    
     @PostMapping("/register")
     public ResponseEntity<?> registerPemustaka(@Valid @RequestBody RegisterRequest registerRequest) {
         // @Valid akan memicu validasi di DTO
