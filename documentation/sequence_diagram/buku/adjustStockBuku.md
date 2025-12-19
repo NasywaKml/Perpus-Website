@@ -1,4 +1,4 @@
-![alt text](adjustStockBuku.png)
+![alt text](adjustStokBuku.png)
 ```
 @startuml
 title Buku - Adjust Stok Buku
