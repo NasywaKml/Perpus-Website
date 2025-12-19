@@ -1,3 +1,4 @@
+![alt text](auth-login.png)
 ```
 @startuml
 title Authentication - Login
