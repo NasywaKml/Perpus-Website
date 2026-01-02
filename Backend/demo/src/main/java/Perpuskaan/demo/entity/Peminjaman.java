@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter // Hanya generate getter
 @Setter // Hanya generate setter
@@ -21,6 +22,7 @@ public class Peminjaman {
     // Kita tidak pakai 'idPemustaka: Integer' tapi langsung objeknya
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pemustaka", nullable = false)
+    @JsonIgnore
     private Pemustaka pemustaka;
 
     // Sama seperti di atas, kita pakai objek Buku

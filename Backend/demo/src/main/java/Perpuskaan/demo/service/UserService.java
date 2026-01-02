@@ -6,12 +6,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import Perpuskaan.demo.dto.LoginResponse;
+import Perpuskaan.demo.dto.response.PemustakaResponse;
 import Perpuskaan.demo.dto.RegisterRequest;
+import Perpuskaan.demo.dto.request.RegisterPustakawanRequest;
+
 import Perpuskaan.demo.entity.Pemustaka;
+import Perpuskaan.demo.entity.Pustakawan;
 import Perpuskaan.demo.entity.Role;
 import Perpuskaan.demo.entity.User;
 import Perpuskaan.demo.repository.UserRepository;
 import Perpuskaan.demo.security.JwtUtils;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -100,11 +105,48 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
     }
-
-    // --- HAPUS SELURUH METHOD generateNoAnggota ---
-    /*
-    private String generateNoAnggota() {
-        // ...
+    public List<PemustakaResponse> getAllPemustaka() {
+        return userRepository.findByRole(Role.MEMBER)
+            .stream()
+            .map(user -> {
+                Pemustaka p = (Pemustaka) user;
+                PemustakaResponse dto = new PemustakaResponse();
+                dto.setIdUser(p.getIdUser());
+                dto.setUsername(p.getUsername());
+                dto.setEmail(p.getEmail());
+                dto.setRole(p.getRole().name());
+                dto.setNoAnggota(p.getNoAnggota());
+                dto.setStatusKeanggotaan(p.getStatusKeanggotaan());
+                return dto;
+            })
+            .toList();
     }
-    */
+
+
+
+   public Pustakawan registerPustakawan(RegisterPustakawanRequest request) {
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username sudah digunakan");
+        }
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email sudah digunakan");
+        }
+
+        Pustakawan pustakawan = new Pustakawan();
+
+        pustakawan.setUsername(request.getUsername());
+        pustakawan.setEmail(request.getEmail());
+        pustakawan.setPassword(passwordEncoder.encode(request.getPassword()));
+        pustakawan.setRole(Role.ADMIN); 
+        pustakawan.setNip(request.getNip());
+        pustakawan.setJabatan(request.getJabatan());
+
+        return userRepository.save(pustakawan);
+    }
+
+
+
+    
 }
