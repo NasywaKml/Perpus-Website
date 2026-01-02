@@ -26,7 +26,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 2. Konversi Role (Enum) kamu menjadi Authority yang dimengerti Spring Security
         // Role kamu: ADMIN / MEMBER -> Spring butuh: "ROLE_ADMIN" / "ROLE_MEMBER" (Opsional pake prefix ROLE_)
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
+       SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+
 
         // 3. Kembalikan objek UserDetails bawaan Spring
         return new org.springframework.security.core.userdetails.User(

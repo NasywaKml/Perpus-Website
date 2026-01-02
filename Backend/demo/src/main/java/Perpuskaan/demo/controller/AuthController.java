@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import Perpuskaan.demo.dto.LoginRequest;
 import Perpuskaan.demo.dto.LoginResponse;
 import Perpuskaan.demo.dto.RegisterRequest; // Pastikan import @RestController dll ada
+import Perpuskaan.demo.dto.request.RegisterPustakawanRequest;
 import Perpuskaan.demo.entity.Pemustaka;
+import Perpuskaan.demo.entity.Pustakawan;
 import Perpuskaan.demo.entity.User;
 import Perpuskaan.demo.service.UserService;
 import jakarta.validation.Valid;
@@ -68,6 +70,21 @@ public class AuthController { // <-- 3. HANYA DEKLARASI KELAS SATU KALI
         } catch (RuntimeException e) {
             // Jika gagal (misal: username sudah ada), kembalikan status 400 Bad Request
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/register/pustakawan")
+    public ResponseEntity<?> registerPustakawan(
+            @Valid @RequestBody RegisterPustakawanRequest request
+    ) {
+        try {
+            Pustakawan pustakawan = userService.registerPustakawan(request);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(pustakawan);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
         }
     }
 }
