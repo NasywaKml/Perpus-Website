@@ -6,7 +6,7 @@
           <div class="logo">
             <div class="logo-icon"></div>
             <div class="logo-text">
-              <span class="lt-main">{{ displayName }}</span>
+              <span class="lt-main" @click="goToProfile" :class="{ clickable: isLoggedIn }">{{ displayName }}</span>
               <span class="lt-sub">Library Management System</span>
             </div>
           </div>
@@ -14,30 +14,23 @@
             <li>
               <a href="#" class="active" @click.prevent="goToHome">Beranda</a>
             </li>
-            <li>
-              <a href="#" @click.prevent="goToBorrow">Borrowing Page</a>
-            </li>
           </ul>
         </div>
 
         <div class="nav-center">
           <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" placeholder="Cari buku, jurnal, atau artikel..." />
+            <input v-model="searchQuery" @keydown.enter="goToCatalogSearch" type="text" placeholder="Cari buku, jurnal, atau artikel..." />
           </div>
         </div>
 
         <div class="nav-right">
           <template v-if="isLoggedIn">
-            <button class="btn-primary small" @click="handleLogout">
-              Logout
-            </button>
+            <button class="btn-primary small" @click="handleLogout">Logout</button>
           </template>
           <template v-else>
             <button class="btn-text" @click="goToLogin">Masuk</button>
-            <button class="btn-primary small" @click="goToRegister">
-              Daftar
-            </button>
+            <button class="btn-primary small" @click="goToRegister">Daftar</button>
           </template>
         </div>
       </div>
@@ -47,54 +40,44 @@
       <div class="container hero-inner">
         <div class="hero-text">
           <h1>Platform Digital untuk Sumber Bacaan Anda</h1>
-          <p class="hero-desc">
-            Akses ribuan jurnal, buku, dan artikel penelitian dari berbagai disiplin ilmu. Dukung penelitian Anda dengan koleksi digital terlengkap.
-          </p>
+          <p class="hero-desc">Akses ribuan jurnal, buku, dan artikel penelitian dari berbagai disiplin ilmu. Dukung penelitian Anda dengan koleksi digital terlengkap.</p>
           <div class="hero-actions">
-            <button class="btn-primary">Mulai Baca <span>→</span></button>
-            <button class="btn-outline">Jelajahi Koleksi</button>
+            <button class="btn-primary" @click="goToCatalog">Mulai Baca <span>→</span></button>
+            <button class="btn-outline" @click="goToCatalog">Jelajahi Koleksi</button>
           </div>
-          
+
           <div class="hero-stats">
             <div class="stat-item">
-              <strong>50K+</strong>
+              <strong>{{ formatShortCount(ebooksCount) }}</strong>
               <span>Buku Digital</span>
             </div>
             <div class="stat-item">
-              <strong>25K+</strong>
-              <span>Jurnal Ilmiah</span>
-            </div>
-            <div class="stat-item">
-              <strong>100K+</strong>
-              <span>Artikel</span>
+              <strong>{{ formatShortCount(physicalCount) }}</strong>
+              <span>Buku Fisik</span>
             </div>
           </div>
         </div>
 
         <div class="hero-image-wrapper">
           <div class="hero-img-container">
-            <img 
-                src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
-                alt="Library" 
-                class="main-hero-img" 
-            />
-                        
+            <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Library" class="main-hero-img" />
+
             <div class="float-card card-1">
-                <div class="fc-icon">📖</div>
-                <div class="fc-text">
+              <div class="fc-icon">📖</div>
+              <div class="fc-text">
                 <strong>Akses Mudah</strong>
                 <span>24/7 Online</span>
-                </div>
+              </div>
             </div>
 
             <div class="float-card card-2">
-                <div class="fc-icon">📄</div>
-                <div class="fc-text">
+              <div class="fc-icon">📄</div>
+              <div class="fc-text">
                 <strong>Multi Format</strong>
                 <span>PDF, EPUB, HTML</span>
-                </div>
+              </div>
             </div>
-            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -104,33 +87,28 @@
         <div class="fb-top">
           <div class="dropdown-wrapper">
             <div class="dropdown" @click="toggleCategoryDropdown">
-              <span>{{ selectedCategory || 'Semua Kategori' }}</span>
+              <span>{{ selectedCategory || "Semua Kategori" }}</span>
               <span class="chev">⌄</span>
             </div>
 
-            <div
-              v-if="showCategoryDropdown"
-              class="dropdown-menu"
-              @click.stop
-            >
-              <button
-                v-for="cat in categoryOptions"
-                :key="cat"
-                class="dropdown-item"
-                @click="selectCategory(cat)"
-              >
+            <div v-if="showCategoryDropdown" class="dropdown-menu" @click.stop>
+              <button v-for="cat in categoryOptions" :key="cat" class="dropdown-item" @click="selectCategory(cat)">
                 {{ cat }}
               </button>
             </div>
           </div>
-          <div class="fb-controls">
-            <div class="dropdown">
-              <span>Paling Relevan</span>
-              <span class="chev">⌄</span>
-            </div>
-            <div class="view-toggle">
-              <button class="vt-btn active">▦</button>
-              <button class="vt-btn">☰</button>
+            <div class="fb-controls">
+            <div class="dropdown-wrapper">
+              <div class="dropdown sort-control" @click="toggleSortDropdown">
+                <span class="sort-label">{{ selectedSortLabel }}</span>
+                <span class="chev">⌄</span>
+              </div>
+
+              <div v-if="showSortDropdown" class="dropdown-menu" @click.stop>
+                <button v-for="opt in sortOptions" :key="opt.value" class="dropdown-item" @click="selectSort(opt.value)">
+                  {{ opt.label }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -138,18 +116,9 @@
           <span class="fb-label">Filter oleh:</span>
 
           <template v-if="activeFilters.length">
-            <button
-              v-for="filter in activeFilters"
-              :key="filter"
-              class="tag"
-              @click="clearAllFilters"
-            >
-              {{ filter }} ×
-            </button>
+            <button v-for="filter in activeFilters" :key="filter" class="tag" @click="clearAllFilters">{{ filter }} ×</button>
 
-            <button class="tag-clear" @click="clearAllFilters">
-              Hapus semua
-            </button>
+            <button class="tag-clear" @click="clearAllFilters">Hapus semua</button>
           </template>
         </div>
       </div>
@@ -161,15 +130,11 @@
           <h2>Koleksi Unggulan</h2>
           <p class="section-sub">Buku dan jurnal terpopuler untuk penelitian</p>
         </div>
-        <a href="#" class="link-all">Lihat Semua</a>
+        <a href="#" class="link-all" @click.prevent="goToCatalog">Lihat Semua</a>
       </div>
 
       <div class="grid-3">
-        <div
-          v-for="(book, index) in featuredBooksToShow"
-          :key="index"
-          class="book-card"
-        >
+        <div v-for="(book, index) in featuredBooksToShow" :key="index" class="book-card">
           <div class="bc-cover">
             <span class="badge-oa">Open Access</span>
             <img :src="book.image" :alt="book.title" />
@@ -177,17 +142,11 @@
           <div class="bc-info">
             <h3 class="bc-title">{{ book.title }}</h3>
             <p class="bc-author">{{ book.author }}</p>
-            <div class="bc-meta">
-              <span class="rating">★ {{ book.rating }}</span>
-              <span class="views">👁 {{ book.views }}</span>
-              <span class="pages">📄 {{ book.pages }}p</span>
-            </div>
+            
             <div class="bc-tags">
               <span v-for="fmt in book.formats" :key="fmt">{{ fmt }}</span>
             </div>
-            <button class="btn-block" @click="goToBookDetails(book.id)">
-              <span class="icon">👁</span> Baca Sekarang
-            </button>
+            <button class="btn-block" @click="goToBookDetails(book.id)"><span class="icon">👁</span> Baca Sekarang</button>
           </div>
         </div>
       </div>
@@ -219,7 +178,7 @@
           <h2>Penambahan Terbaru</h2>
           <p class="section-sub">Koleksi terbaru yang baru saja ditambahkan ke perpustakaan</p>
         </div>
-        <button class="btn-outline-sm">↻ Lihat Semua</button>
+        <button class="btn-outline-sm" @click="goToCatalog">↻ Lihat Semua</button>
       </div>
 
       <div class="list-layout">
@@ -229,10 +188,8 @@
             <p class="li-author">{{ item.author }}</p>
             <p class="li-desc">{{ item.desc }}</p>
             <div class="li-meta">
-              <span class="rating">★ {{ item.rating }}</span>
-              <span class="stats">📥 {{ item.downloads }}</span>
-              <span class="stats">👁 {{ item.views }}</span>
-              <span class="publisher"> • {{ item.publisher }}</span>
+              <span v-if="item.views" class="stats">👁 {{ item.views }}</span>
+              <span v-if="item.publisher" class="publisher"> • {{ item.publisher }}</span>
             </div>
             <div class="li-tags">
               <span v-for="tag in item.tags" :key="tag" class="tag-sm">{{ tag }}</span>
@@ -241,13 +198,12 @@
           <div class="li-actions">
             <span class="time-ago">🕒 {{ item.time }}</span>
             <div class="btn-group">
-              <button class="btn-black sm">Baca</button>
-              <button class="btn-outline sm">Download</button>
+              <button class="btn-black sm" @click="goToBookDetails(item.id)">Baca</button>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div class="center-btn-wrapper">
         <button v-if="showLoadMore" class="btn-outline" @click="loadMoreNew">Muat Lebih Banyak</button>
       </div>
@@ -263,12 +219,8 @@
               <span class="lt-sub">Platform Penelitian Digital</span>
             </div>
           </div>
-          <p class="footer-desc">
-            Platform perpustakaan digital terdepan untuk penelitian akademik dengan akses ke ribuan buku, jurnal, dan artikel dari berbagai disiplin ilmu.
-          </p>
-          <div class="socials">
-            <span>f</span> <span>t</span> <span>in</span> <span>yt</span>
-          </div>
+          <p class="footer-desc">Platform perpustakaan digital terdepan untuk penelitian akademik dengan akses ke ribuan buku, jurnal, dan artikel dari berbagai disiplin ilmu.</p>
+          <div class="socials"><span>f</span> <span>t</span> <span>in</span> <span>yt</span></div>
         </div>
 
         <div class="footer-col">
@@ -314,9 +266,7 @@
       <div class="container footer-bottom">
         <p>© 2024 LibraryHub. Semua hak dilindungi.</p>
         <div class="fb-links">
-          <a href="#">Kebijakan Privasi</a> • 
-          <a href="#">Syarat Penggunaan</a> • 
-          <a href="#">Bantuan</a> • 
+          <a href="#">Kebijakan Privasi</a> • <a href="#">Syarat Penggunaan</a> • <a href="#">Bantuan</a> •
           <a href="#">Sitemap</a>
         </div>
       </div>
@@ -325,61 +275,169 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, computed, onMounted } from "vue";
+import { watch } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
-const API_BASE = 'http://localhost:8080';
+const API_BASE = "http://localhost:8080";
 
 // Auth state
 const isLoggedIn = ref(false);
-const displayName = ref('LibrarySys');
+const displayName = ref("LibrarySys");
 
 // Filter & kategori state
 const categoryOptions = ref([]);
 const selectedCategory = ref(null);
 const showCategoryDropdown = ref(false);
 const filteredBooks = ref([]);
+// Sort dropdown state
+const showSortDropdown = ref(false);
+const sortOptions = ref([
+  { value: "relevan", label: "Paling Relevan" },
+  { value: "az", label: "A - Z" },
+  { value: "za", label: "Z - A" },
+  { value: "terlaris", label: "Terlaris" },
+]);
+const selectedSort = ref("relevan");
+
+const selectedSortLabel = computed(() => {
+  const opt = sortOptions.value.find((o) => o.value === selectedSort.value);
+  return opt ? opt.label : "Paling Relevan";
+});
+
+let borrowCounts = {}; // map title -> count (computed when auth available)
 
 // Navigation functions
 function goToHome() {
-  router.push('/HomePage');
+  router.push("/HomePage");
 }
 
-function goToBorrow() {
-  router.push({ path: '/BorrowPage', query: { tab: 'borrow' } });
-}
+// goToBorrow removed (feature removed from nav)
 
 function goToBookDetails(bookId) {
   router.push(`/BookDetails/${bookId}`);
 }
 
 function goToLogin() {
-  router.push('/LoginPage');
+  router.push("/LoginPage");
 }
 
 function goToRegister() {
-  router.push('/LoginPage?tab=register');
+  router.push("/LoginPage?tab=register");
+}
+
+function goToCatalog() {
+  router.push("/BookCatalog");
 }
 
 function handleLogout() {
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('tokenType');
-  sessionStorage.removeItem('idUser');
-  sessionStorage.removeItem('username');
-  sessionStorage.removeItem('userData');
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("tokenType");
+  sessionStorage.removeItem("idUser");
+  sessionStorage.removeItem("username");
+  sessionStorage.removeItem("userData");
 
   isLoggedIn.value = false;
-  displayName.value = 'LibrarySys';
+  displayName.value = "LibrarySys";
 
-  router.push('/HomePage');
+  router.push("/HomePage");
+}
+
+function goToProfile() {
+  const idUser = sessionStorage.getItem("idUser");
+  if (!idUser) return router.push("/LoginPage");
+  router.push("/UserProfile");
+}
+
+// Search from homepage -> navigate to BookCatalog with query
+const searchQuery = ref("");
+function goToCatalogSearch() {
+  const q = (searchQuery.value || "").trim();
+  if (!q) {
+    router.push("/BookCatalog");
+    return;
+  }
+  router.push({ path: "/BookCatalog", query: { q } });
 }
 
 // Dropdown handlers
 function toggleCategoryDropdown() {
   showCategoryDropdown.value = !showCategoryDropdown.value;
+}
+
+function toggleSortDropdown() {
+  showSortDropdown.value = !showSortDropdown.value;
+}
+
+function selectSort(value) {
+  selectedSort.value = value;
+  showSortDropdown.value = false;
+  applySortToLists();
+}
+
+async function computeBorrowCountsIfAuth() {
+  try {
+    const token = sessionStorage.getItem("token");
+    const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
+    borrowCounts = {};
+    if (!token) return;
+
+    const res = await axios.get(`${API_BASE}/api/peminjaman`, { headers: { Authorization: `${tokenType} ${token}` } });
+    const list = res.data || [];
+    for (const p of list) {
+      const title = (p.judulBuku || "").trim();
+      if (!title) continue;
+      borrowCounts[title] = (borrowCounts[title] || 0) + 1;
+    }
+  } catch (err) {
+    // ignore errors (likely 401 if not admin) and keep borrowCounts empty
+    console.debug("Could not compute borrow counts (maybe unauthorized):", err && err.message ? err.message : err);
+    borrowCounts = {};
+  }
+}
+
+function applySortToLists() {
+  const mode = selectedSort.value;
+
+  function sortByAZ(a, b) {
+    return (a.title || "").localeCompare(b.title || "", "id", { sensitivity: "base" });
+  }
+  function sortByZA(a, b) {
+    return (b.title || "").localeCompare(a.title || "", "id", { sensitivity: "base" });
+  }
+  function sortByTerlaris(a, b) {
+    const ca = borrowCounts[a.title] || 0;
+    const cb = borrowCounts[b.title] || 0;
+    if (cb !== ca) return cb - ca; // descending by count
+    // tie-breaker by id (ascending)
+    const ia = a.id || 0;
+    const ib = b.id || 0;
+    return ia - ib;
+  }
+
+  // If 'relevan' (Paling Relevan) is selected, keep original order (no sort)
+  if (mode === "relevan") {
+    return;
+  }
+  const sorter = mode === "az" ? sortByAZ : mode === "za" ? sortByZA : sortByTerlaris;
+
+  // Apply to featuredBooks and allNewBooks (and filteredBooks if active)
+  try {
+    if (filteredBooks.value && filteredBooks.value.length) {
+      filteredBooks.value.sort(sorter);
+    } else if (featuredBooks.value && featuredBooks.value.length) {
+      featuredBooks.value.sort(sorter);
+    }
+
+    if (allNewBooks.value && allNewBooks.value.length) {
+      allNewBooks.value.sort(sorter);
+    }
+  } catch (err) {
+    console.error("Error applying sort:", err);
+  }
 }
 
 function selectCategory(category) {
@@ -407,60 +465,84 @@ const activeFilters = computed(() => {
   return filters;
 });
 
-const featuredBooksToShow = computed(() =>
-  filteredBooks.value.length ? filteredBooks.value : featuredBooks.value
-);
+const featuredBooksToShow = computed(() => (filteredBooks.value.length ? filteredBooks.value : featuredBooks.value));
 
 async function loadCategories() {
   try {
     const res = await axios.get(`${API_BASE}/api/buku`);
     const books = res.data || [];
-    const set = new Set(
-      books
-        .map((b) => b.kategori)
-        .filter((k) => k && typeof k === 'string' && k.trim() !== '')
-    );
+    const set = new Set(books.map((b) => b.kategori).filter((k) => k && typeof k === "string" && k.trim() !== ""));
     categoryOptions.value = Array.from(set);
   } catch (err) {
-    console.error('Failed to load categories:', err);
+    console.error("Failed to load categories:", err);
     categoryOptions.value = [];
+  }
+}
+
+// Replace dummy category counts with dynamic data from API
+// Helper to normalize category name for mapping
+function normalizeCategoryKey(name) {
+  return name
+    .toLowerCase()
+    .replace(/&/g, "dan")
+    .replace(/[^a-z0-9]/g, "")
+    .replace(/\s+/g, "");
+}
+
+async function loadCategoryCounts() {
+  try {
+    // Fetch all books and compute counts per kategori locally
+    const res = await axios.get(`${API_BASE}/api/buku`);
+    const books = res.data || [];
+
+    const map = {};
+    for (const b of books) {
+      const k = b.kategori || "";
+      const key = normalizeCategoryKey(k);
+      map[key] = (map[key] || 0) + 1;
+    }
+
+    categories.value = categories.value.map((cat) => {
+      const key = normalizeCategoryKey(cat.name);
+      const count = map[key] || 0;
+      return {
+        ...cat,
+        count: count,
+      };
+    });
+  } catch (err) {
+    console.error("Failed to load category counts:", err);
   }
 }
 
 async function loadBooksByCategory(category) {
   try {
-    const res = await axios.get(
-      `${API_BASE}/api/buku/kategori/${encodeURIComponent(category)}`
-    );
+    const res = await axios.get(`${API_BASE}/api/buku/kategori/${encodeURIComponent(category)}`);
     const books = res.data || [];
 
     filteredBooks.value = books.map((b) => ({
       title: b.judul,
-      author: `${b.pengarang || ''}${
-        b.tahunTerbit ? ' • ' + b.tahunTerbit : ''
-      }`,
+      author: `${b.pengarang || ""}${b.tahunTerbit ? " • " + b.tahunTerbit : ""}`,
       rating: 0,
-      views: '',
+      views: "",
       pages: 0,
-      formats: ['PDF'],
-      image:
-        b.urlGambarSampul ||
-        'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80',
+      formats: ["PDF"],
+      image: b.urlGambarSampul || "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80",
     }));
   } catch (err) {
-    console.error('Failed to load books by category:', err);
+    console.error("Failed to load books by category:", err);
     filteredBooks.value = [];
   }
 }
 
-onMounted(() => {
-  const idUser = sessionStorage.getItem('idUser');
+onMounted(async () => {
+  const idUser = sessionStorage.getItem("idUser");
 
   if (idUser) {
     isLoggedIn.value = true;
 
-    let name = sessionStorage.getItem('username') || null;
-    const storedUser = sessionStorage.getItem('userData');
+    let name = sessionStorage.getItem("username") || null;
+    const storedUser = sessionStorage.getItem("userData");
 
     if (!name && storedUser) {
       try {
@@ -471,15 +553,16 @@ onMounted(() => {
       }
     }
 
-    displayName.value = name || 'LibrarySys';
+    displayName.value = name || "LibrarySys";
   } else {
     isLoggedIn.value = false;
-    displayName.value = 'LibrarySys';
+    displayName.value = "LibrarySys";
   }
 
-  loadCategories();
-  loadNewAdditions();
-  loadFeaturedBooks();
+  // compute borrow counts if authenticated, then load data and apply current sort
+  await computeBorrowCountsIfAuth();
+  await Promise.all([loadCategories(), loadCategoryCounts(), loadNewAdditions(), loadFeaturedBooks(), loadHeroStats()]);
+  applySortToLists();
 });
 
 // Load featured books from API
@@ -487,39 +570,91 @@ async function loadFeaturedBooks() {
   try {
     const res = await axios.get(`${API_BASE}/api/buku`);
     const books = res.data || [];
-    
+
     // Ambil 3 buku pertama sebagai featured books
     featuredBooks.value = books.slice(0, 3).map((b) => ({
       id: b.idBuku,
-      title: b.judul || 'Untitled',
-      author: (b.pengarang || '') + (b.tahunTerbit ? ' • ' + b.tahunTerbit : ''),
+      title: b.judul || "Untitled",
+      author: (b.pengarang || "") + (b.tahunTerbit ? " • " + b.tahunTerbit : ""),
       rating: 4.5,
-      views: '10K+',
+      views: "10K+",
       pages: 300,
-      formats: ['PDF'],
-      image: b.urlGambarSampul || 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=400&q=80'
+      formats: ["PDF"],
+      image: b.urlGambarSampul || "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=400&q=80",
     }));
-    
-    console.log('Featured books loaded:', featuredBooks.value);
+
+    console.log("Featured books loaded:", featuredBooks.value);
   } catch (err) {
-    console.error('Failed to load featured books:', err);
+    console.error("Failed to load featured books:", err);
     featuredBooks.value = [];
   }
 }
 
 // Featured books from API
-const featuredBooks = ref([])
+const featuredBooks = ref([]);
 
-// DUMMY DATA FOR CATEGORIES
+// Hero stats (dynamic from API)
+const ebooksCount = ref(0);
+const physicalCount = ref(0);
+
+function formatShortCount(n) {
+  if (n === null || n === undefined) return "0";
+  if (n >= 1000000) return Math.round(n / 1000000) + "M+";
+  if (n >= 1000) return Math.round(n / 1000) + "K+";
+  return String(n);
+}
+
+async function loadHeroStats() {
+  try {
+    const res = await axios.get(`${API_BASE}/api/buku`);
+    const books = res.data || [];
+
+    let ebooks = 0;
+    let physical = 0;
+
+    for (const b of books) {
+      const candidates = [b.jenisFisik, b.jenis_fisik, b.fisik, b.jenis, b.type, b.tipe, b.kategori, b.format];
+      const raw = (candidates.find((c) => c !== undefined && c !== null) || "").toString().toLowerCase();
+
+      if (/(ebook|e-?book|e book|digital)/.test(raw)) {
+        ebooks += 1;
+        continue;
+      }
+
+      if (/(fisik|physical|hardcover|paperback|print|hard cover|paper back)/.test(raw)) {
+        physical += 1;
+        continue;
+      }
+
+      // fallback: infer from title/kategori
+      const title = (b.judul || "").toString().toLowerCase();
+      const kategori = (b.kategori || "").toString().toLowerCase();
+      if (/(fisik|physical|hardcover|paperback|print)/.test(title) || /(fisik|physical|hardcover|paperback|print)/.test(kategori)) {
+        physical += 1;
+      } else {
+        // default to ebook for unknown
+        ebooks += 1;
+      }
+    }
+
+    ebooksCount.value = ebooks;
+    physicalCount.value = physical;
+  } catch (err) {
+    console.error("Failed to load hero stats:", err);
+    ebooksCount.value = 0;
+    physicalCount.value = 0;
+  }
+}
+
 const categories = ref([
-  { name: "Teknologi & IT", desc: "Programming, AI, Cybersecurity", count: "12,150", icon: "💻", color: "#3b82f6", bg: "#eff6ff" },
-  { name: "Sains & Penelitian", desc: "Biologi, Kimia, Fisika", count: "8,750", icon: "⚗️", color: "#10b981", bg: "#ecfdf5" },
-  { name: "Kesehatan & Medis", desc: "Kedokteran, Farmasi, Keperawatan", count: "6,500", icon: "♥", color: "#ef4444", bg: "#fef2f2" },
-  { name: "Ilmu Sosial", desc: "Sosiologi, Psikologi, Antropologi", count: "9,200", icon: "⚖", color: "#8b5cf6", bg: "#f5f3ff" },
-  { name: "Bisnis & Ekonomi", desc: "Manajemen, Keuangan, Marketing", count: "7,580", icon: "📈", color: "#f59e0b", bg: "#fffbeb" },
-  { name: "Seni & Budaya", desc: "Seni Rupa, Musik, Sastra", count: "4,320", icon: "🎨", color: "#ec4899", bg: "#fdf2f8" },
-  { name: "Pendidikan", desc: "Pedagogik, Kurikulum, Metodologi", count: "5,870", icon: "🎓", color: "#6366f1", bg: "#eef2ff" },
-  { name: "Hukum", desc: "Konstitusi, Pidana, Perdata", count: "3,890", icon: "⚖", color: "#64748b", bg: "#f8fafc" }
+  { name: "Teknologi & IT", desc: "Programming, AI, Cybersecurity", icon: "💻", color: "#3b82f6", bg: "#eff6ff" },
+  { name: "Sains & Penelitian", desc: "Biologi, Kimia, Fisika", icon: "⚗️", color: "#10b981", bg: "#ecfdf5" },
+  { name: "Kesehatan & Medis", desc: "Kedokteran, Farmasi, Keperawatan", icon: "♥", color: "#ef4444", bg: "#fef2f2" },
+  { name: "Ilmu Sosial", desc: "Sosiologi, Psikologi, Antropologi", icon: "⚖", color: "#8b5cf6", bg: "#f5f3ff" },
+  { name: "Bisnis & Ekonomi", desc: "Manajemen, Keuangan, Marketing", icon: "📈", color: "#f59e0b", bg: "#fffbeb" },
+  { name: "Seni & Budaya", desc: "Seni Rupa, Musik, Sastra", icon: "🎨", color: "#ec4899", bg: "#fdf2f8" },
+  { name: "Pendidikan", desc: "Pedagogik, Kurikulum, Metodologi", icon: "🎓", color: "#6366f1", bg: "#eef2ff" },
+  { name: "Hukum", desc: "Konstitusi, Pidana, Perdata", icon: "⚖", color: "#64748b", bg: "#f8fafc" },
 ]);
 
 // New additions: load from API, show only first N, hide load-more when not needed
@@ -535,38 +670,39 @@ async function loadNewAdditions() {
     const books = res.data || [];
 
     allNewBooks.value = books.map((b) => ({
-      title: b.judul || 'Untitled',
-      author: (b.pengarang || '') + (b.tahunTerbit ? ' • ' + b.tahunTerbit : ''),
-      desc: b.abstrak || '',
+      id: b.idBuku, // Ensure the ID is mapped correctly
+      title: b.judul || "Untitled",
+      author: (b.pengarang || "") + (b.tahunTerbit ? " • " + b.tahunTerbit : ""),
+      desc: b.abstrak || "",
       rating: 0,
-      downloads: '',
-      views: '',
-      publisher: b.penerbit || '',
+      downloads: "",
+      views: "",
+      publisher: b.penerbit || "",
       tags: [],
-      time: ''
+      time: "",
     }));
 
     showLoadMore.value = allNewBooks.value.length > 4;
   } catch (err) {
-    console.error('Failed to load new additions:', err);
+    console.error("Failed to load new additions:", err);
     allNewBooks.value = [];
     showLoadMore.value = false;
   }
 }
 
 function loadMoreNew() {
-  // reveal all loaded books; keep buttons dummy as requested
+  // tampilkan semua buku yang sudah dimuat; tombol hanya bersifat tampilan
   visibleCount.value = allNewBooks.value.length;
   showLoadMore.value = false;
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* ================= GLOBAL RESET & UTILS ================= */
 .library-home {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #111827;
   background-color: #ffffff;
   line-height: 1.5;
@@ -591,7 +727,7 @@ button {
 
 /* Buttons */
 .btn-primary {
-  background-color: #0B0F19;
+  background-color: #0b0f19;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -606,7 +742,7 @@ button {
 .btn-outline {
   background-color: transparent;
   color: #111827;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 10px 20px;
   border-radius: 6px;
   font-size: 14px;
@@ -616,7 +752,7 @@ button {
 .btn-outline-sm {
   background-color: white;
   color: #374151;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -632,7 +768,7 @@ button {
 }
 
 .btn-black {
-  background-color: #0B0F19;
+  background-color: #0b0f19;
   color: white;
   padding: 8px 16px;
   border-radius: 6px;
@@ -642,7 +778,7 @@ button {
 
 .btn-block {
   width: 100%;
-  background-color: #0B0F19;
+  background-color: #0b0f19;
   color: white;
   padding: 10px;
   border-radius: 6px;
@@ -654,7 +790,7 @@ button {
 
 /* ================= NAVBAR ================= */
 .navbar {
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #f3f4f6;
   padding: 16px 0;
   position: sticky;
   top: 0;
@@ -668,7 +804,8 @@ button {
   justify-content: space-between;
 }
 
-.nav-left, .logo {
+.nav-left,
+.logo {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -677,7 +814,7 @@ button {
 .logo-icon {
   width: 32px;
   height: 32px;
-  background-color: #0B0F19;
+  background-color: #0b0f19;
   border-radius: 50%;
 }
 
@@ -692,9 +829,16 @@ button {
   font-size: 16px;
 }
 
+.lt-main.clickable {
+  cursor: pointer;
+}
+.lt-main.clickable:hover {
+  text-decoration: underline;
+}
+
 .lt-sub {
   font-size: 10px;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .nav-links {
@@ -706,7 +850,7 @@ button {
 
 .nav-links a {
   text-decoration: none;
-  color: #6B7280;
+  color: #6b7280;
   font-size: 14px;
   font-weight: 500;
 }
@@ -717,7 +861,7 @@ button {
 }
 
 .search-wrapper {
-  background-color: #F9FAFB;
+  background-color: #f9fafb;
   border-radius: 8px;
   padding: 8px 16px;
   display: flex;
@@ -736,7 +880,7 @@ button {
 
 .search-icon {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 
 .nav-right {
@@ -770,7 +914,7 @@ button {
 }
 
 .hero-desc {
-  color: #4B5563;
+  color: #4b5563;
   font-size: 16px;
   margin-bottom: 32px;
   max-width: 500px;
@@ -785,7 +929,7 @@ button {
 .hero-stats {
   display: flex;
   gap: 48px;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   padding-top: 24px;
 }
 
@@ -797,7 +941,7 @@ button {
 
 .stat-item span {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .hero-image-wrapper {
@@ -852,13 +996,13 @@ button {
 
 .fc-text span {
   font-size: 10px;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 /* ================= FILTER BAR ================= */
 .filter-bar {
   padding: 24px 0;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .fb-top {
@@ -874,7 +1018,7 @@ button {
 }
 
 .dropdown {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -882,8 +1026,18 @@ button {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  background: #F9FAFB;
+  background: #f9fafb;
   min-width: 140px;
+}
+
+.sort-control {
+  /* make label centered while keeping the chevron visible */
+  padding-left: 12px;
+  padding-right: 8px;
+}
+.sort-control .sort-label {
+  flex: 1 1 auto;
+  text-align: center;
 }
 
 .dropdown-menu {
@@ -891,7 +1045,7 @@ button {
   top: calc(100% + 6px);
   left: 0;
   background: #ffffff;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   padding: 6px 0;
@@ -914,7 +1068,7 @@ button {
 }
 
 .dropdown-item:hover {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .fb-controls {
@@ -924,7 +1078,7 @@ button {
 
 .view-toggle {
   display: flex;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -933,7 +1087,7 @@ button {
   padding: 6px 10px;
   background: white;
   border: none;
-  border-right: 1px solid #E5E7EB;
+  border-right: 1px solid #e5e7eb;
   cursor: pointer;
 }
 
@@ -942,7 +1096,7 @@ button {
 }
 
 .vt-btn.active {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .fb-tags {
@@ -953,12 +1107,12 @@ button {
 
 .fb-label {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   margin-right: 8px;
 }
 
 .tag {
-  background: #F3F4F6;
+  background: #f3f4f6;
   border: none;
   padding: 4px 10px;
   border-radius: 4px;
@@ -971,7 +1125,7 @@ button {
   background: none;
   border: none;
   font-size: 11px;
-  color: #EF4444;
+  color: #ef4444;
   margin-left: auto;
   cursor: pointer;
 }
@@ -1001,7 +1155,7 @@ h2 {
 
 .section-sub {
   font-size: 13px;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .link-all {
@@ -1018,7 +1172,7 @@ h2 {
 }
 
 .book-card {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 16px;
   transition: box-shadow 0.2s;
@@ -1052,7 +1206,7 @@ h2 {
   font-size: 10px;
   font-weight: 600;
   color: #111827;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
 }
 
 .bc-title {
@@ -1064,7 +1218,7 @@ h2 {
 
 .bc-author {
   font-size: 11px;
-  color: #6B7280;
+  color: #6b7280;
   margin-bottom: 12px;
 }
 
@@ -1072,12 +1226,12 @@ h2 {
   display: flex;
   gap: 12px;
   font-size: 11px;
-  color: #4B5563;
+  color: #4b5563;
   margin-bottom: 12px;
 }
 
 .rating {
-  color: #F59E0B;
+  color: #f59e0b;
   font-weight: 600;
 }
 
@@ -1088,7 +1242,7 @@ h2 {
 
 .bc-tags span {
   font-size: 10px;
-  background: #F3F4F6;
+  background: #f3f4f6;
   padding: 2px 6px;
   border-radius: 4px;
   color: #374151;
@@ -1102,7 +1256,7 @@ h2 {
 }
 
 .cat-card {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   background: white;
@@ -1110,7 +1264,7 @@ h2 {
 }
 
 .cat-card:hover {
-  border-color: #D1D5DB;
+  border-color: #d1d5db;
 }
 
 .cat-top {
@@ -1132,7 +1286,7 @@ h2 {
 
 .cat-count {
   font-size: 11px;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .cat-title {
@@ -1143,7 +1297,7 @@ h2 {
 
 .cat-desc {
   font-size: 11px;
-  color: #6B7280;
+  color: #6b7280;
   line-height: 1.4;
 }
 
@@ -1155,7 +1309,7 @@ h2 {
 }
 
 .list-item {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -1175,20 +1329,20 @@ h2 {
 
 .li-author {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   margin-bottom: 8px;
 }
 
 .li-desc {
   font-size: 13px;
-  color: #4B5563;
+  color: #4b5563;
   margin-bottom: 12px;
   max-width: 600px;
 }
 
 .li-meta {
   font-size: 11px;
-  color: #6B7280;
+  color: #6b7280;
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
@@ -1200,11 +1354,11 @@ h2 {
 }
 
 .tag-sm {
-  background: #F3F4F6;
+  background: #f3f4f6;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 10px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
 }
 
 .li-actions {
@@ -1216,7 +1370,7 @@ h2 {
 
 .time-ago {
   font-size: 11px;
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 
 .btn-group {
@@ -1231,9 +1385,9 @@ h2 {
 
 /* ================= FOOTER ================= */
 .footer {
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   padding-top: 60px;
-  background: #F9FAFB;
+  background: #f9fafb;
 }
 
 .footer-inner {
@@ -1245,7 +1399,7 @@ h2 {
 
 .brand-col .footer-desc {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   margin: 16px 0;
   line-height: 1.6;
   max-width: 300px;
@@ -1259,7 +1413,7 @@ h2 {
 .socials span {
   font-size: 12px;
   font-weight: 600;
-  color: #4B5563;
+  color: #4b5563;
   cursor: pointer;
 }
 
@@ -1276,14 +1430,14 @@ h2 {
 
 .footer-col ul li {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   margin-bottom: 12px;
   cursor: pointer;
 }
 
 .contact-info p {
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   margin-bottom: 10px;
   display: flex;
   gap: 8px;
@@ -1304,7 +1458,7 @@ h2 {
 }
 
 .input-group input {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 8px 12px;
   border-radius: 6px 0 0 6px;
   font-size: 12px;
@@ -1313,7 +1467,7 @@ h2 {
 }
 
 .input-group button {
-  background: #0B0F19;
+  background: #0b0f19;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -1322,16 +1476,16 @@ h2 {
 }
 
 .footer-bottom {
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   padding: 24px;
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 
 .fb-links a {
-  color: #9CA3AF;
+  color: #9ca3af;
   text-decoration: none;
   margin: 0 4px;
 }
