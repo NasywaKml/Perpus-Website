@@ -13,10 +13,14 @@ import Perpuskaan.demo.dto.request.RegisterPustakawanRequest;
 import Perpuskaan.demo.entity.Pemustaka;
 import Perpuskaan.demo.entity.Pustakawan;
 import Perpuskaan.demo.entity.Role;
+import Perpuskaan.demo.entity.StatusKeanggotaan;
 import Perpuskaan.demo.entity.User;
 import Perpuskaan.demo.repository.UserRepository;
 import Perpuskaan.demo.security.JwtUtils;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
 public class UserService {
@@ -29,6 +33,8 @@ public class UserService {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    
 
     /**
      * Metode untuk login
@@ -88,7 +94,8 @@ public class UserService {
         pemustaka.setPassword(passwordEncoder.encode(request.getPassword()));
         
         // 6. Set nilai default
-        pemustaka.setStatusKeanggotaan("Aktif");
+        pemustaka.setStatusKeanggotaan(StatusKeanggotaan.AKTIF);
+
         
         // --- POIN PENTING DISKUSI KITA TADI ---
         // 7. Set Role secara otomatis menjadi MEMBER
@@ -116,7 +123,7 @@ public class UserService {
                 dto.setEmail(p.getEmail());
                 dto.setRole(p.getRole().name());
                 dto.setNoAnggota(p.getNoAnggota());
-                dto.setStatusKeanggotaan(p.getStatusKeanggotaan());
+                dto.setStatusKeanggotaan(p.getStatusKeanggotaan().name());
                 return dto;
             })
             .toList();

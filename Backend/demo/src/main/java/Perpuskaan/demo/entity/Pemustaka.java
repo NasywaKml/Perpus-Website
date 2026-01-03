@@ -4,11 +4,13 @@ import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.EnumType;
 import lombok.Setter;
 @Getter
 @Setter
@@ -19,8 +21,10 @@ import lombok.Setter;
 public class Pemustaka extends User {
     
     // Tambahkan @Column agar Hibernate yakin nama kolomnya "status_keanggotaan"
-    @Column(name = "status_keanggotaan") 
-    private String statusKeanggotaan;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_keanggotaan", nullable = false)
+    private StatusKeanggotaan statusKeanggotaan;
+
     
     @Column(
         name = "no_anggota",
