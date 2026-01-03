@@ -7,7 +7,9 @@ import LoginPage from "../Views/LoginPage.vue";
 import BookDetails from "../Views/BookDetails.vue";
 import BorrowPage from "../Views/BorrowPage.vue";
 import UserProfile from "../Views/UserProfile.vue";   // <— Tambahan baru
+import AdminPage from "../Views/AdminPage.vue";
 import HomePage from "../Views/HomePage.vue";
+import BookCatalog from "../Views/BookCatalog.vue";
 
 /* =============================
    ROUTES
@@ -40,6 +42,18 @@ const routes = [
     path: "/UserProfile",
     name: "UserProfile",
     component: UserProfile,
+  },
+  {
+    path: "/AdminPage",
+    name: "AdminPage",
+    component: AdminPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/BookCatalog",
+    name: "BookCatalog",
+    component: BookCatalog,
+    meta: { requiresAuth: true },
   },
   {
     path: "/",
