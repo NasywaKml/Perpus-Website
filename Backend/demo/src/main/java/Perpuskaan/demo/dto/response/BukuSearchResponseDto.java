@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class BukuSearchResponseDto {
+    private Integer idBuku;
     private String judul;
     private String isbn;
     private String kategori;
