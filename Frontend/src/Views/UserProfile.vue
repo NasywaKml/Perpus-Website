@@ -12,9 +12,7 @@
       <button class="menu-btn active">
         <span class="menu-ic">👤</span> User Profile
       </button>
-      <button class="menu-btn" @click="goToBorrowPage">
-        <span class="menu-ic">📚</span> Borrow Page
-      </button>
+      <!-- Borrow Page removed -->
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -85,7 +83,6 @@
             </div>
           </div>
 
-          <button class="edit-btn">Edit Profile</button>
         </div>
 
         <!-- STATISTICS -->
@@ -122,39 +119,31 @@
           <table class="data-table" v-if="currentBorrowed.length">
             <thead>
               <tr>
-                <th>Book ID</th>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Borrow Date</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style="width:110px;">Book ID</th>
+                <th style="width:260px;">Title</th>
+                <th style="width:180px;">Author</th>
+                <th style="width:120px;">Borrow Date</th>
+                <th style="width:120px;">Due Date</th>
+                <th style="width:110px;">Status</th>
+                
               </tr>
             </thead>
-
             <tbody>
               <tr v-for="book in currentBorrowed" :key="book.idPeminjaman">
-                <td>{{ book.idBuku }}</td>
-
-                  <td class="title-cell">
-                    <div class="book-thumb" :style="book.image ? { backgroundImage: `url(${book.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"></div>
-                    {{ book.judulBuku }}
-                  </td>
-
+                <td>{{ book.idBuku || '-' }}</td>
+                <td class="title-cell">
+                  <div class="book-thumb" :style="book.image ? { backgroundImage: `url(${book.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"></div>
+                  {{ book.judulBuku }}
+                </td>
                 <td>{{ book.pengarang }}</td>
-
                 <td>{{ formatDate(book.tanggalPinjam) }}</td>
                 <td>{{ formatDate(book.tanggalKembali) }}</td>
-
                 <td>
                   <span :class="['badge', getStatusClass(book.status)]">
                     {{ book.status }}
                   </span>
                 </td>
-
-                <td>
-                  <button class="renew-btn" @click="goToBorrowHistory">Renew</button>
-                </td>
+                
               </tr>
             </tbody>
           </table>
@@ -166,31 +155,31 @@
         <div class="section">
           <div class="section-header-row">
             <h2>Fine Status</h2>
-            <button class="pay-all-btn"
-                    :disabled="totalFines <= 0">Pay All Fines</button>
           </div>
 
           <table class="data-table" v-if="overdueBooks.length">
             <thead>
               <tr>
-                <th>Book</th>
-                <th>Reason</th>
-                <th>Due Date</th>
-                <th>Amount</th>
-                <th>Actions</th>
+                <th style="width:90px;">Fine ID</th>
+                <th style="width:220px;">Book</th>
+                <th style="width:120px;">Reason</th>
+                <th style="width:120px;">Due Date</th>
+                <th style="width:120px;">Amount</th>
+                <th style="width:110px;">Status</th>
+                
               </tr>
             </thead>
-
             <tbody>
               <tr v-for="book in overdueBooks" :key="book.idPeminjaman">
+                <td>-</td>
                 <td>{{ book.judulBuku }}</td>
                 <td>Late Return</td>
                 <td>{{ formatDate(book.tanggalKembali) }}</td>
                 <td>IDR {{ formatCurrency(book.totalDenda || 0) }}</td>
-
                 <td>
-                  <button class="pay-btn">Pay Now</button>
+                  <span class="badge unpaid">Unpaid</span>
                 </td>
+                
               </tr>
             </tbody>
           </table>
@@ -303,7 +292,7 @@ async function loadAvailableBooks() {
     const books = res.data || [];
     // Note: BukuSearchResponseDto doesn't include idBuku
     availableBooks.value = books.map(b => ({
-      id: null, // Not available in response DTO
+      id: null, 
       title: b.judul,
       author: b.pengarang,
       image: b.urlGambarSampul || null,
@@ -323,8 +312,9 @@ async function loadBorrowingHistory() {
     const res = await axios.get(`${API_BASE}/api/peminjaman/history`);
     const history = res.data || [];
 
+    const today = new Date();
     const enriched = await Promise.all(history.map(async (item) => {
-      const rawStatus = (item.status || "").toString().toUpperCase();
+      let rawStatus = (item.status || "").toString().toUpperCase();
       let status = rawStatus;
       if (rawStatus === "PINJAM" || rawStatus === "BORROWED") status = "DIPINJAM";
       if (rawStatus === "RETURNED" || rawStatus === "DIKEMBALIKAN") status = "KEMBALI";
@@ -332,15 +322,12 @@ async function loadBorrowingHistory() {
       let image = null;
       let author = item.pengarang || "";
 
-      // PeminjamanResponseDto doesn't have idBuku, so we search by title
       try {
-        // Try to find book in availableBooks first
         const match = availableBooks.value.find(b => b.title === item.judulBuku);
         if (match) {
           image = match.image || null;
           author = match.author || author;
         } else {
-          // If not found, search via API
           const searchRes = await axios.get(`${API_BASE}/api/buku/search?keyword=${encodeURIComponent(item.judulBuku)}`);
           if (searchRes.data && searchRes.data.length > 0) {
             const foundBook = searchRes.data.find(b => b.judul === item.judulBuku);
@@ -351,7 +338,6 @@ async function loadBorrowingHistory() {
           }
         }
       } catch (err) {
-        // ignore per-item failure
         console.warn("Failed to fetch book detail for", item.judulBuku, err);
       }
 
@@ -363,16 +349,33 @@ async function loadBorrowingHistory() {
         dueDate = borrowDate.toISOString().split("T")[0];
       }
 
+      // Overdue logic: jika belum dikembalikan dan dueDate < hari ini
+      let isOverdue = false;
+      if (status === "DIPINJAM" && dueDate) {
+        const due = new Date(dueDate);
+        if (due < today) {
+          status = "TERLAMBAT";
+          isOverdue = true;
+        }
+      }
+
+      let totalDenda = item.totalDenda || 0;
+      if (isOverdue && totalDenda === 0) {
+        const due = new Date(dueDate);
+        const daysLate = Math.max(0, Math.ceil((today - due) / (1000 * 60 * 60 * 24)));
+        totalDenda = daysLate * 5000;
+      }
+
       return {
         idPeminjaman: item.idPeminjaman,
-        idBuku: null, // PeminjamanResponseDto doesn't include idBuku
+        idBuku: null,
         judulBuku: item.judulBuku,
         pengarang: author || item.username || "-",
         tanggalPinjam: item.tanggalPinjam,
-        tanggalKembali: dueDate, // Use calculated due date
-        totalDenda: item.totalDenda || 0,
-        status: status || "-",
-        image: image
+        tanggalKembali: dueDate,
+        totalDenda,
+        status,
+        image
       };
     }));
 
@@ -386,7 +389,7 @@ async function loadBorrowingHistory() {
   }
 }
 
-// FETCH PROFILE (AUTH + TOKEN HEADER FIXED)
+// FETCH PROFILE
 async function fetchProfile() {
   try {
     const token = sessionStorage.getItem("token");
@@ -431,13 +434,9 @@ function goToBorrowHistory() {
   router.push({ path: '/BorrowPage', query: { tab: 'my-borrowing-history', menu: 'active' } });
 }
 
-function goToBorrowPage() {
-  router.push('/BorrowPage');
-}
 </script>
 
 <style scoped>
-/* ===== ALL ORIGINAL STYLING PRESERVED, EXACTLY SAME ===== */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -624,24 +623,34 @@ function goToBorrowPage() {
 .label {
   font-size: 12px;
 }
+/* Responsive & modern styling improvements */
 .section {
   margin-top: 28px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  padding: 18px 16px;
 }
 .section h2 {
   font-size: 16px;
   font-weight: 700;
+  margin-bottom: 8px;
 }
 .section-header-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 .pay-all-btn {
   background: #0f172a;
   color: white;
-  padding: 6px 12px;
+  padding: 6px 16px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 .pay-all-btn:disabled {
   background: #9ca3af;
@@ -654,17 +663,21 @@ function goToBorrowPage() {
   border-radius: 10px;
   overflow: hidden;
   border-collapse: collapse;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 .data-table th {
   background: #f8fafc;
-  padding: 12px;
-  font-size: 12px;
+  padding: 12px 8px;
+  font-size: 13px;
   font-weight: 700;
   border-bottom: 1px solid #e2e8f0;
+  text-align: left;
 }
 .data-table td {
-  padding: 12px;
+  padding: 12px 8px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  vertical-align: middle;
 }
 .book-thumb {
   width: 28px;
@@ -672,6 +685,7 @@ function goToBorrowPage() {
   background: #e2e8f0;
   border-radius: 6px;
   margin-right: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
 .title-cell {
   display: flex;
@@ -680,26 +694,55 @@ function goToBorrowPage() {
 .badge.overdue {
   background: #fee2e2;
   color: #dc2626;
+  font-weight: 600;
 }
 .badge.active {
   background: #dcfce7;
   color: #16a34a;
+  font-weight: 600;
 }
 .badge.returned-late {
   background: #fef9c3;
   color: #b45309;
+  font-weight: 600;
 }
 .badge.unpaid {
   background: #fee2e2;
   color: #dc2626;
+  font-weight: 600;
 }
 .renew-btn,
 .pay-btn {
   background: #0f172a;
   color: white;
-  padding: 5px 10px;
+  padding: 6px 14px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.renew-btn:hover,
+.pay-btn:hover {
+  background: #334155;
+}
+@media (max-width: 900px) {
+  .content {
+    padding: 24px 8px;
+  }
+  .info-row {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sidebar {
+    width: 100px;
+    padding: 12px 4px;
+  }
+  .top-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 10px;
+  }
 }
 </style>
