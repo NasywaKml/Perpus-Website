@@ -73,6 +73,15 @@ public class PeminjamanService {
         return mapToResponse(p);
     }
 
+    private Date convertToDate(LocalDate localDate) {
+        if (localDate == null) return null;
+
+        return Date.from(
+            localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
+        );
+    }
+
+
     // ================================
     //      KEMBALIKAN BUKU
     // ================================
@@ -94,7 +103,10 @@ public class PeminjamanService {
 
         // 3. Kembalikan Stok Buku (+1)
         Buku buku = p.getBuku();
-        buku.setJumlahStok(buku.getJumlahStok() + 1);
+        Integer stok = buku.getJumlahStok();
+        if (stok == null) stok = 0;
+
+        buku.setJumlahStok(stok + 1);
         bukuRepo.save(buku);
 
         peminjamanRepo.save(p);
@@ -126,25 +138,30 @@ public class PeminjamanService {
     //   HELPER: KONVERSI TANGGAL
     // ================================
     // Method ini yang menyelamatkan error "plusDays undefined" kamu
-    private LocalDate convertToLocalDate(Date dateToConvert) {
-        if (dateToConvert == null) return LocalDate.now();
-        return dateToConvert.toInstant()
+    private LocalDate convertToLocalDate(Date date) {
+        if (date == null) return LocalDate.now();
+
+        if (date instanceof java.sql.Date sqlDate) {
+            return sqlDate.toLocalDate(); // ✅ AMAN
+        }
+
+        return date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
     }
 
-    private Date convertToDate(LocalDate dateToConvert) {
-        return Date.from(dateToConvert.atStartOfDay()
-                .atZone(ZoneId.systemDefault())
-                .toInstant());
-    }
 
     // ================================
     //       GET ALL & HISTORY
     // ================================
+    @Transactional(readOnly = true)
     public List<PeminjamanResponseDto> getAll() {
-        return peminjamanRepo.findAll().stream().map(this::mapToResponse).collect(Collectors.toList());
+        return peminjamanRepo.findAllWithRelations()
+            .stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
     }
+
 
     public PeminjamanResponseDto getById(Integer id) {
         Peminjaman p = peminjamanRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
