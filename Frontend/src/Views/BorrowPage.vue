@@ -46,60 +46,9 @@
 
       <div class="panel">
         
-        <div v-if="mainTab === 'borrow'" class="borrow-section">
-          <div class="section-header">
-            <h2>Available Books</h2>
-            <p>Complete your book loan process immediately. Premium books require a small fee.</p>
-          </div>
-
-          <div class="books-list">
-            <div
-              v-for="book in availableBooks"
-              :key="book.id"
-              class="book-card"
-              :class="{ borrowed: book.borrowed }"
-            >
-              <div class="book-img">
-                <img :src="book.image" :alt="book.title" />
-              </div>
-
-              <div class="book-info">
-                <div class="book-header">
-                  <div class="text-block">
-                    <h3 class="book-title">{{ book.title }}</h3>
-                    <p class="book-author">{{ book.author }}</p>
-                  </div>
-                  <span
-                    class="badge"
-                    :class="book.borrowed ? 'badge-red' : 'badge-green'"
-                  >
-                    {{ book.borrowed ? "Borrowed" : "Available" }}
-                  </span>
-                </div>
-
-                <div class="borrow-period">
-                  <span class="clock">🕒</span>
-                  <p>7 days borrowing period</p>
-                </div>
-
-                <div v-if="book.borrowed && book.borrowedUntil" class="book-alert">
-                  <span class="alert-ic">ⓘ</span>
-                  <p>
-                    This book has been sold out. Available at:
-                    <b>{{ book.borrowedUntil }}</b>
-                  </p>
-                </div>
-
-                <button
-                  class="borrow-btn"
-                  :disabled="book.borrowed"
-                  @click="openBorrowModal(book)"
-                >
-                  <span class="btn-ic">📘</span>
-                  Borrow Now
-                </button>
-              </div>
-            </div>
+        <div v-if="mainTab === 'borrow'" class="empty-borrow-placeholder">
+          <div class="empty-inner">
+            <p class="empty-text">Please choose book from other page</p>
           </div>
         </div>
 
@@ -112,8 +61,7 @@
 
           <div v-if="overdueManagedBooks.length > 0" class="new-alert-banner red">
             <span class="alert-icon">⚠️</span>
-            <span>You have outstanding late fees totaling IDR 10.000</span>
-            <button class="alert-action-btn">Pay All Fees</button>
+            <span>You have outstanding late fees totaling {{ formattedTotalLateFees }}</span>
           </div>
 
           <div class="sub-tabs-container">
@@ -174,20 +122,7 @@
                       <span class="ic">🔄</span> Returned: {{ formatDate(book.returnedDate) }}
                     </div>
                     
-                    <div v-if="book.status === 'active'" class="nb-meta-item">
-                      <span class="ic">🔄</span> Extensions:
-                      <div class="ext-progress">
-                        <span class="ext-count">{{ book.extensionsUsed }}/{{ book.maxExtensions }}</span>
-                      </div>
-                    </div>
-
-                    <div v-if="book.status === 'active' && book.extensionAvailable && !book.waitingCount" class="nb-extension-status green">
-                      <span class="ic">🟢</span> Extension available now
-                    </div>
-                     <div v-if="book.status === 'active' && book.waitingCount" class="nb-extension-status muted">
-                      <span class="ic">👥</span> {{ book.waitingCount }} people waiting
-                    </div>
-
+                    
                   </div>
                 </div>
               </div> <div class="card-divider"></div>
@@ -196,7 +131,7 @@
                 <div class="footer-left">
                   <div class="fee-row">
                     <span class="fee-label">Borrowing Fee</span>
-                    <span class="fee-value">${{ book.fee.toFixed(1) }}</span>
+                    <span class="fee-value">IDR {{ formatCurrency(book.fee) }}</span>
                   </div>
                   <div v-if="book.lateFee > 0" class="fee-row">
                     <span class="fee-label red">Late Fee ({{ book.lateDays }} days overdue)</span>
@@ -204,27 +139,17 @@
                   </div>
                   <div class="fee-row status-row">
                     <span class="fee-label">Payment Status</span>
+                    <span v-if="book.paymentStatus === 'Paid'" class="badge-payment green" style="margin-left:8px;">Paid</span>
+                    <span v-else-if="book.paymentStatus === 'Pending'" class="badge-payment orange" style="margin-left:8px;">Pending</span>
                   </div>
                 </div>
 
                 <div class="footer-right">
-                   <span v-if="book.paymentStatus === 'Paid'" class="badge-payment green">Paid</span>
-                  <span v-if="book.paymentStatus === 'Pending'" class="badge-payment orange">Pending</span>
+                  <!-- payment badge moved next to label -->
 
-                  <button 
-                    v-if="book.status === 'active'" 
-                    class="action-btn black"
-                    :disabled="book.waitingCount > 0 || !book.extensionAvailable"
-                    @click="openExtendModal(book)"
-                  >
-                    <span v-if="book.waitingCount > 0" class="btn-ic">⏳</span>
-                    <span v-else class="btn-ic">🔄</span>
-                    Extend Loan
-                  </button>
+                  <!-- Extend Loan button removed -->
 
-                  <button v-if="book.status === 'overdue' && book.paymentStatus === 'Pending'" class="action-btn black">
-                    Pay Now
-                  </button>
+                  <!-- Pay Now button removed -->
                 </div>
               </div>
 
@@ -285,11 +210,11 @@
             </div>
             <div class="modal-alert blue">
               <span class="alert-ic">ⓘ</span>
-              Late returns may incur a fine of IDR 10.000,00 per day.
+              Late returns may incur a fine of IDR {{ formatCurrency(selectedBook.dendaPerHari || 1000) }} per day.
             </div>
             <div class="modal-footer">
               <button class="btn ghost" @click="closeModal">Cancel</button>
-              <button class="btn dark" @click="proceedToPayment">Proceed to Payment →</button>
+              <button class="btn dark" @click="proceedToPayment">Proceed →</button>
             </div>
           </div>
 
@@ -306,7 +231,7 @@
             </div>
             <div class="modal-divider"></div>
             <div class="payment-summary">
-              <div class="summary-row"><span class="muted">Total Amount</span><span class="total">IDR 70.000,00</span></div>
+              <div class="summary-row"><span class="muted">Total Amount</span><span class="total">IDR {{ formatCurrency(selectedBook.fee || 0) }}</span></div>
               <div class="summary-row"><span class="muted">Borrowing by</span><span>{{ userName }}</span></div>
             </div>
             <div class="modal-divider"></div>
@@ -431,7 +356,7 @@
             </div>
             <div class="modal-alert blue">
               <span class="alert-ic">ⓘ</span>
-              Late returns may incur a fine of IDR 10.000,00 per day. Please return the book on time.
+              Late returns may incur a fine of IDR {{ formatCurrency(selectedBook.dendaPerHari || 1000) }} per day. Please return the book on time.
             </div>
             <div class="modal-footer">
               <button class="btn ghost" @click="closeModal">View My Borrowed Books</button>
@@ -468,53 +393,154 @@ const subTab = ref("active");
 const availableBooks = ref([]); 
 
 // Fetch available books from API
+// Fetch available books from API
 async function loadAvailableBooks() {
   try {
-    const res = await fetch("http://localhost:8080/api/buku");
-    if (!res.ok) throw new Error("Failed to fetch books");
-    
-    const books = await res.json();
+    const res = await axios.get("/api/buku");
+    const books = res.data || [];
     console.log("Available books from API (RAW):", books);
     
-    // Transform API response ke format yang sesuai dengan UI
-    // Note: BukuSearchResponseDto doesn't include idBuku
-    // We need to fetch each book's details individually to get the ID
-    // This is inefficient but necessary since the DTO doesn't include ID
+    // Also fetch user's borrowing history (if logged in) to mark books borrowed by user
+    let history = [];
+    try {
+      if (sessionStorage.getItem("token")) {
+        const hres = await axios.get("/api/peminjaman/history");
+        history = hres.data || [];
+        console.log('User borrowing history:', history);
+      }
+    } catch (err) {
+      console.warn('Failed to load user history while computing available books:', err);
+    }
+
+    // Fetch all borrow records (used to determine next available return date for sold-out books)
+    let allBorrows = [];
+    try {
+      if (sessionStorage.getItem("token")) {
+        const allRes = await axios.get("/api/peminjaman");
+        allBorrows = allRes.data || [];
+        console.log('All borrow records:', allBorrows);
+      } else {
+        console.debug('No JWT in sessionStorage; skipping fetch of global borrow records');
+      }
+    } catch (err) {
+      // Non-ok responses are expected for non-admin users
+      if (err.response?.status !== 403 && err.response?.status !== 401) {
+        console.warn('Failed to load global borrow records:', err);
+      }
+    }
+
+    // Build a lookup by book title for active borrows
+    const activeBorrowByTitle = {};
+    for (const h of history) {
+      const status = (h.status || '').toString().toUpperCase();
+      if (status === 'DIPINJAM' || status === 'PINJAM' || status === 'BORROWED') {
+        const title = (h.judulBuku || '').trim();
+        if (title) activeBorrowByTitle[title] = h;
+      }
+    }
+
+    // Build a lookup of upcoming (non-overdue) return dates per book title
+    const upcomingReturnByTitle = {};
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0,0,0,0);
+      for (const p of allBorrows) {
+        const status = (p.status || '').toString().toUpperCase();
+        if (status === 'DIPINJAM' || status === 'PINJAM' || status === 'BORROWED') {
+          if (!p.tanggalKembali) continue;
+          const ret = new Date(p.tanggalKembali);
+          ret.setHours(0,0,0,0);
+          if (ret.getTime() < todayStart.getTime()) continue;
+          const title = (p.judulBuku || '').trim();
+          if (!title) continue;
+          upcomingReturnByTitle[title] = upcomingReturnByTitle[title] || [];
+          upcomingReturnByTitle[title].push(p);
+        }
+      }
+    } catch (err) {
+      console.warn('Error building upcomingReturnByTitle:', err);
+    }
+
+    // Transform API response to UI model
     availableBooks.value = books.map((book) => {
+      // Cek field stok dengan berbagai kemungkinan nama field
+      // BukuSearchResponseDto menggunakan jumlahStok (camelCase)
+      const rawStok = book.jumlahStok ?? book.jumlah_stok ?? book.stok ?? book.stock;
+      
+      // Cek apakah stok null/undefined terlebih dahulu
+      // Jika null/undefined, anggap masih ada stok (bisa dipinjam)
+      // Jika ada nilai, konversi ke number dan cek apakah <= 0
+      const soldOut = (rawStok !== null && rawStok !== undefined) 
+        ? (Number(rawStok) <= 0) 
+        : false; // Jika null/undefined, anggap masih ada stok
+      
+      const title = (book.judul || '').trim();
+      const userBorrowEntry = activeBorrowByTitle[title];
+      const borrowedByUser = !!userBorrowEntry;
+      
+      let borrowedUntil = null;
+      if (userBorrowEntry && userBorrowEntry.tanggalPinjam) {
+        const bd = new Date(userBorrowEntry.tanggalPinjam);
+        bd.setDate(bd.getDate() + 7);
+        borrowedUntil = bd.toLocaleDateString('id-ID');
+      }
+
+      if (soldOut) {
+        try {
+          const upcoming = upcomingReturnByTitle[title] || [];
+          if (upcoming.length > 0) {
+            const dates = upcoming.map(x => new Date(x.tanggalKembali).getTime());
+            const minTs = Math.min(...dates);
+            const dt = new Date(minTs);
+            borrowedUntil = dt.toLocaleDateString('id-ID');
+          }
+        } catch (err) {
+          console.warn('Error computing next available date for', title, err);
+        }
+      }
+
+      // Pastikan ID buku ada - jika tidak ada, log warning
+      const bookId = book.idBuku;
+      if (!bookId) {
+        console.warn(`WARNING: Book "${title}" tidak memiliki idBuku!`, book);
+      }
+
+      console.log(`Book "${title}": rawStok=${rawStok}, soldOut=${soldOut} (type: ${typeof soldOut}), borrowedByUser=${borrowedByUser} (type: ${typeof borrowedByUser}), id=${bookId}`);
+
       return {
-        id: book.idBuku, // Now using idBuku from API response
-        title: book.judul,
-        author: book.pengarang,
+        id: bookId, 
+        title: title,
+        author: book.pengarang || '',
         image: book.urlGambarSampul || "https://via.placeholder.com/80x120",
-        borrowed: (book.jumlahStok || 0) <= 0,
+        soldOut: Boolean(soldOut),
+        borrowedByUser: Boolean(borrowedByUser),
+        borrowedUntil,
         fee: book.hargaSewa || 0,
+        dendaPerHari: book.dendaPerHari || 1000,
         dueDate: addDaysISO(new Date().toISOString().split("T")[0], 7),
-        _bookTitle: book.judul,
+        _bookTitle: title,
         _bookAuthor: book.pengarang
       };
     });
-    
+
     console.log("Transformed available books:", availableBooks.value);
   } catch (err) {
     console.error("Error loading available books:", err);
   }
 }
 
+
 // Helper function to get book ID by title
 async function getBookIdByTitle(title) {
   try {
-    // Search for the book by exact title
-    const searchRes = await fetch(`http://localhost:8080/api/buku/search?keyword=${encodeURIComponent(title)}`);
-    if (searchRes.ok) {
-      const results = await searchRes.json();
-      // Find exact match
-      const exactMatch = results.find(b => b.judul === title);
-      if (exactMatch) {
-        // Since search doesn't return ID, we need to try a different approach
-        // We'll need to iterate through all books and match by title+author
-        // For now, return null and handle in borrow function
-        return null;
-      }
+    // GUNAKAN AXIOS
+    const searchRes = await axios.get("/api/buku/search", {
+      params: { keyword: title }
+    });
+    const results = searchRes.data || [];
+    const exactMatch = results.find(b => b.judul === title);
+    if (exactMatch) {
+      return null;
     }
   } catch (err) {
     console.warn("Error searching for book:", err);
@@ -528,6 +554,18 @@ const managedBooks = ref([]);
 const activeManagedBooks = computed(() => managedBooks.value.filter(b => b.status === "active"));
 const overdueManagedBooks = computed(() => managedBooks.value.filter(b => b.status === "overdue"));
 const historyManagedBooks = computed(() => managedBooks.value.filter(b => b.status === "history"));
+
+// Total late fees (sum of lateFee on overdue items)
+const totalLateFees = computed(() => {
+  return overdueManagedBooks.value.reduce((sum, b) => {
+    const n = Number(b.lateFee || 0);
+    return sum + (isNaN(n) ? 0 : n);
+  }, 0);
+});
+
+const formattedTotalLateFees = computed(() => {
+  return 'IDR ' + formatCurrency(totalLateFees.value);
+});
 
 // Helper to get books based on current subTab
 const currentSubTabBooks = computed(() => {
@@ -627,25 +665,9 @@ async function loadUserDataFromSession() {
 // Load borrowing history dari API (uses JWT token via Principal)
 async function loadBorrowingHistory() {
     try {
-        const token = sessionStorage.getItem("token");
-        const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
-        
-        const res = await fetch(`http://localhost:8080/api/peminjaman/history`, {
-          headers: {
-            "Authorization": `${tokenType} ${token}`
-          }
-        });
-        
-        if (!res.ok) {
-          if (res.status === 401) {
-            alert("Session expired. Please login again.");
-            router.push("/LoginPage");
-            return;
-          }
-          throw new Error("Failed to fetch borrowing history");
-        }
-        
-        const history = await res.json();
+        // GUNAKAN AXIOS
+        const res = await axios.get("/api/peminjaman/history");
+        const history = res.data || [];
         console.log("Borrowing history from API:", history);
         
     // Transform API response ke format UI
@@ -654,7 +676,6 @@ async function loadBorrowingHistory() {
       const dueDate = borrowedDate ? new Date(borrowedDate.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
       const returnedDate = item.tanggalKembali ? new Date(item.tanggalKembali) : null;
 
-      // Tentukan status berdasarkan data API (handle DB values)
       let status = "history";
       let lateDays = 0;
 
@@ -662,7 +683,7 @@ async function loadBorrowingHistory() {
       if (rawStatus === "DIPINJAM" || rawStatus === "PINJAM" || rawStatus === "BORROWED") {
         if (dueDate && new Date() > dueDate) {
           status = "overdue";
-          lateDays = Math.max(0, Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24)));
+          lateDays = Math.max(0, Math.ceil((new Date() - dueDate) / (1000 * 60 * 60 * 24)));
         } else {
           status = "active";
         }
@@ -670,38 +691,42 @@ async function loadBorrowingHistory() {
         status = "history";
       }
 
-      // Fetch detail buku untuk mendapatkan gambar dan fee
-      // Note: PeminjamanResponseDto doesn't have idBuku, so we search by title
       let bookImage = "https://via.placeholder.com/80x120";
       let bookFee = 0;
       let bookAuthor = item.username || "";
       let idBuku = null;
+      let bookDendaPerHari = 1000; // Default fallback
 
       try {
-        // Try to find book in availableBooks by title
         const match = availableBooks.value.find(b => b.title === item.judulBuku);
         if (match) {
           bookImage = match.image || bookImage;
           bookFee = match.fee || 0;
           bookAuthor = match.author || bookAuthor;
           idBuku = match.id;
+          bookDendaPerHari = match.dendaPerHari || 1000;
         } else {
-          // If not found, try to search via API
-          const searchRes = await fetch(`http://localhost:8080/api/buku/search?keyword=${encodeURIComponent(item.judulBuku)}`);
-          if (searchRes.ok) {
-            const searchResults = await searchRes.json();
-            const foundBook = searchResults.find(b => b.judul === item.judulBuku);
+          // GUNAKAN AXIOS
+          const searchRes = await axios.get("/api/buku/search", {
+            params: { keyword: item.judulBuku }
+          });
+          if (searchRes.data && searchRes.data.length > 0) {
+            const foundBook = searchRes.data.find(b => b.judul === item.judulBuku);
             if (foundBook) {
-              // Note: BukuSearchResponseDto doesn't have idBuku, so we can't store it
               bookImage = foundBook.urlGambarSampul || bookImage;
               bookFee = foundBook.hargaSewa || 0;
               bookAuthor = foundBook.pengarang || bookAuthor;
+              bookDendaPerHari = foundBook.dendaPerHari || 1000;
             }
           }
         }
       } catch (err) {
         console.warn("Could not fetch book image or details:", err);
       }
+
+      let apiLate = Number(item.totalDenda || 0);
+      if (isNaN(apiLate)) apiLate = 0;
+      const computedLate = (status === 'overdue' && apiLate === 0) ? (lateDays * 5000) : apiLate;
 
       return {
         id: item.idPeminjaman,
@@ -717,9 +742,10 @@ async function loadBorrowingHistory() {
         extensionAvailable: true,
         waitingCount: 0,
         fee: bookFee,
-        lateFee: item.totalDenda || 0,
+        dendaPerHari: bookDendaPerHari,
+        lateFee: computedLate,
         lateDays: lateDays,
-        paymentStatus: (item.totalDenda && item.totalDenda > 0) ? "Pending" : "Paid",
+        paymentStatus: (computedLate && computedLate > 0) ? "Pending" : "Paid",
         status: status
       };
     }));
@@ -727,34 +753,42 @@ async function loadBorrowingHistory() {
         console.log("Transformed managed books:", managedBooks.value);
     } catch (err) {
         console.error("Error loading borrowing history:", err);
-        managedBooks.value = []; // Set empty array jika error
+        if (err.response?.status === 401) {
+          alert("Session expired. Please login again.");
+          router.push("/LoginPage");
+        }
+        managedBooks.value = [];
     }
 }
 
-// Mock loading available books
 async function loadBooks() {
   await loadAvailableBooks();
 }
 
 async function openBorrowModal(book) {
-  if (book.borrowed) return;
+  console.log("DEBUG openBorrowModal called with book:", book);
+  console.log("DEBUG: book.soldOut =", book.soldOut, "type:", typeof book.soldOut);
+  console.log("DEBUG: book.borrowedByUser =", book.borrowedByUser, "type:", typeof book.borrowedByUser);
+  console.log("DEBUG: book.id =", book.id, "type:", typeof book.id);
+  
+  if (book.soldOut || book.borrowedByUser) {
+    console.log("DEBUG: Modal blocked - soldOut or borrowedByUser is true");
+    return;
+  }
+  
+  // Validasi ID buku
+  if (!book.id) {
+    console.error("ERROR: Book tidak memiliki ID!", book);
+    alert("Error: Book ID tidak ditemukan. Silakan refresh halaman dan coba lagi.");
+    return;
+  }
   
   console.log("DEBUG: Opening modal with book:", book);
   
-  // If book doesn't have ID, we need to find it
-  // Since BukuSearchResponseDto doesn't include idBuku, we need to search for it
-  if (!book.id && book.title) {
-    try {
-      // Search for the book to find its ID
-      // We'll need to get all books and find the matching one
-      // Since we can't get ID from search, we'll store the title and handle it in finishPayment
-      console.log("Book ID not available, will search by title when borrowing:", book.title);
-    } catch (err) {
-      console.error("Error getting book ID:", err);
-    }
-  }
-  
-  selectedBook.value = book;
+  selectedBook.value = {
+    ...book,
+    id: book.id // Pastikan ID ter-set
+  };
   
   console.log("DEBUG: selectedBook.value.id =", selectedBook.value.id);
   console.log("DEBUG: selectedBook.value.title =", selectedBook.value.title);
@@ -771,40 +805,39 @@ async function openBorrowModal(book) {
 function proceedToPayment() { modalStep.value = "payment"; }
 
 async function finishPayment() { 
-  // Submit borrow request ke API
   try {
-    const token = sessionStorage.getItem("token");
-    const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
-    
-    if (!token) {
-      alert("Session expired. Please login again.");
+    if (!sessionStorage.getItem("token")) {
+      alert("Sesi Anda telah berakhir. Silakan login kembali.");
       router.push("/LoginPage");
       return;
     }
     
     console.log("DEBUG finishPayment - selectedBook.value:", selectedBook.value);
     
-    // Get book ID - check multiple sources
-    let bookId = selectedBook.value.id || routeBookId;
-    
-    // If still no ID, try to find it by iterating through possible IDs
-    // This is a workaround since the API doesn't return IDs in list/search responses
-    if (!bookId && selectedBook.value.title) {
-      alert("Book ID is required. Please borrow from the book details page (click on a book first).");
+    // Validasi: Cek apakah buku masih tersedia (tidak soldOut dan tidak borrowedByUser)
+    if (selectedBook.value.soldOut) {
+      alert("Maaf, stok buku ini sedang habis. Silakan pilih buku lain.");
+      closeModal();
       return;
     }
     
+    if (selectedBook.value.borrowedByUser) {
+      alert("Anda sudah meminjam buku ini. Silakan kembalikan terlebih dahulu sebelum meminjam lagi.");
+      closeModal();
+      return;
+    }
+    
+    let bookId = selectedBook.value.id || routeBookId;
+    
     if (!bookId) {
-      alert("Book ID is required. Please try borrowing from the book details page where the ID is available.");
+      alert("ID buku tidak ditemukan. Silakan coba lagi atau pilih buku dari halaman detail buku.");
       return;
     }
     
     console.log("DEBUG: Submitting borrow request with:");
     console.log("  - idBuku:", bookId);
     console.log("  - tanggalPinjam:", startDate.value);
-    console.log("  - Note: idPemustaka will be extracted from JWT token (Principal)");
     
-    // Backend uses Principal (from JWT token) to get user, so we don't send idPemustaka
     const peminjamanRequest = {
       idBuku: bookId,
       tanggalPinjam: startDate.value
@@ -812,34 +845,46 @@ async function finishPayment() {
     
     console.log("DEBUG: Full request object:", peminjamanRequest);
     
-    const res = await fetch("http://localhost:8080/api/peminjaman/pinjam", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `${tokenType} ${token}`
-      },
-      body: JSON.stringify(peminjamanRequest)
-    });
+    // GUNAKAN AXIOS
+    const res = await axios.post("/api/peminjaman/pinjam", peminjamanRequest);
     
-    const responseData = await res.json();
     console.log("Response status:", res.status);
-    console.log("Response data:", responseData);
+    console.log("Response data:", res.data);
     
-    if (!res.ok) {
-      if (res.status === 401) {
-        alert("Session expired. Please login again.");
-        router.push("/LoginPage");
-        return;
-      }
-      const errorMsg = responseData.error || responseData.message || "Failed to borrow book";
-      throw new Error(errorMsg);
-    }
-    
-    console.log("Borrow successful:", responseData);
+    console.log("Borrow successful:", res.data);
     modalStep.value = "success"; 
   } catch (err) {
     console.error("Error borrowing book:", err);
-    alert("Failed to borrow book: " + err.message);
+    
+    // Handle 401 Unauthorized
+    if (err.response?.status === 401) {
+      alert("Sesi Anda telah berakhir. Silakan login kembali.");
+      router.push("/LoginPage");
+      return;
+    }
+    
+    // Extract error message dari response
+    let errorMsg = "Gagal meminjam buku";
+    let errorTitle = "Error";
+    
+    if (err.response?.data) {
+      const errorData = err.response.data;
+      
+      // Ambil pesan error yang lebih user-friendly
+      if (errorData.message) {
+        errorMsg = errorData.message;
+      } else if (errorData.error) {
+        errorTitle = errorData.error;
+        errorMsg = errorData.message || errorData.error;
+      } else if (typeof errorData === 'string') {
+        errorMsg = errorData;
+      }
+    } else if (err.message) {
+      errorMsg = err.message;
+    }
+    
+    // Tampilkan pesan error yang lebih informatif
+    alert(`${errorTitle}\n\n${errorMsg}`);
   }
 }
 
@@ -868,6 +913,45 @@ function closeModal() {
   // Refresh data setelah modal ditutup
   loadBorrowingHistory();
 }
+
+onMounted(async () => {
+  // Load initial lists
+  try {
+    await loadBooks();
+    await loadBorrowingHistory();
+  } catch (e) {
+    console.warn('Error during initial load:', e);
+  }
+
+  // Only auto-open the borrow confirm modal when navigation explicitly
+  // requested a borrow action (route contains a book id AND tab=borrow).
+  if (routeBookId && String(route.query.tab || '').toLowerCase() === 'borrow') {
+    try {
+      const res = await axios.get(`/api/buku/${routeBookId}`);
+      const b = res.data || {};
+      selectedBook.value = {
+        id: b.idBuku ?? b.id ?? routeBookId,
+        title: b.judul ?? b.title ?? 'Unknown',
+        author: b.pengarang ?? b.author ?? '',
+        image: b.urlGambarSampul ?? b.image ?? 'https://via.placeholder.com/80x120',
+        fee: b.hargaSewa ?? b.fee ?? 0,
+        dendaPerHari: b.dendaPerHari ?? 1000
+      };
+
+      modalContext.value = 'borrow';
+      modalStep.value = 'confirm';
+      showModal.value = true;
+
+      const t = new Date();
+      startDate.value = t.toISOString().split('T')[0];
+      dueDate.value = addDaysISO(startDate.value, 7);
+    } catch (err) {
+      console.warn('Failed to auto-open borrow modal for book id', routeBookId, err);
+    }
+  }
+});
+
+// payAllFees() removed — payment handled externally now
 
 onMounted(async () => {
   await loadUserDataFromSession();
@@ -917,6 +1001,7 @@ onMounted(async () => {
    ========================================= */
 .books-list { display: flex; flex-direction: column; gap: 12px; }
 .book-card { position: relative; display: flex; gap: 16px; padding: 16px; border: 1px solid #eceff3; border-radius: 10px; background: #fff; min-height: 128px; }
+.book-card.borrowed { background: #fbfafb; }
 .book-img { width: 92px; height: 128px; border-radius: 8px; overflow: hidden; background: #f3f4f6; flex-shrink: 0; }
 .book-img img { width: 100%; height: 100%; object-fit: cover; }
 .book-info { flex: 1; }
@@ -928,8 +1013,33 @@ onMounted(async () => {
 .badge-red { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
 .borrow-period { margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280; }
 .book-alert { margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px 10px; border-radius: 8px; font-size: 11px; line-height: 1.4; }
-.borrow-btn { margin-top: 8px; background: #0b1020; color: white; border: 0; height: 28px; padding: 0 10px; border-radius: 7px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; width: max-content; }
-.borrow-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+.borrow-btn { 
+  margin-top: 8px; 
+  background: #0b1020; 
+  color: white; 
+  border: 0; 
+  height: 28px; 
+  padding: 0 10px; 
+  border-radius: 7px; 
+  font-size: 11px; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px; 
+  cursor: pointer; 
+  width: max-content;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+.borrow-btn:disabled { 
+  background: #9ca3af; 
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.borrow-btn:not(:disabled):hover {
+  background: #1a1f2e;
+  opacity: 0.9;
+}
 
 
 /* =========================================
@@ -937,29 +1047,29 @@ onMounted(async () => {
    ========================================= */
 
 /* New Alert Banner */
-.new-alert-banner { display: flex; align-items: center; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 24px; }
-.new-alert-banner.red { background: #FFF1F2; border: 1px solid #FECDD3; color: #9F1239; }
+.new-alert-banner { display: flex; align-items: center; padding: 14px 18px; border-radius: 10px; font-size: 14px; margin-bottom: 20px; gap: 12px; }
+.new-alert-banner.red { background: #FFF7ED; border: 1px solid #FDE6CF; color: #92400e; }
 .alert-icon { margin-right: 12px; font-size: 16px; }
-.alert-action-btn { margin-left: auto; background: #fff; border: 1px solid #E5E7EB; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; color: #374151; }
+.alert-action-btn { margin-left: auto; background: #ffffff; border: 1px solid #E8E6E3; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: #374151; box-shadow: 0 1px 2px rgba(16,24,40,0.04); }
 
 /* New Pill Sub Tabs */
 .sub-tabs-container { margin-bottom: 24px; }
-.sub-tab-track { display: flex; background: #F3F4F6; border-radius: 999px; padding: 4px; width: 100%; }
-.sub-tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 36px; border: none; background: transparent; border-radius: 999px; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer; transition: all 0.2s; }
-.sub-tab-btn.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.sub-tab-count { background: #E5E7EB; color: #374151; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
-.sub-tab-count.red { background: #FEE2E2; color: #EF4444; }
+.sub-tab-track { display: flex; background: #F6F6F7; border-radius: 999px; padding: 6px; width: 100%; }
+.sub-tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border: none; background: transparent; border-radius: 999px; font-size: 14px; font-weight: 600; color: #6B7280; cursor: pointer; transition: all 0.18s; }
+.sub-tab-btn.active { background: #ffffff; color: #111827; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+.sub-tab-count { background: #EEF1F3; color: #374151; font-size: 12px; padding: 4px 8px; border-radius: 999px; }
+.sub-tab-count.red { background: #FFF1F0; color: #B91C1C; }
 
 /* New Book Card List */
-.new-book-list { display: flex; flex-direction: column; gap: 16px; }
-.new-book-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+.new-book-list { display: flex; flex-direction: column; gap: 18px; }
+.new-book-card { background: #fff; border: 1px solid #EEF0F3; border-radius: 12px; padding: 22px; position: relative; overflow: hidden; box-shadow: 0 8px 28px rgba(15,23,42,0.04); }
 
 /* Card Top Badge (Absolute) */
-.card-top-badge { position: absolute; top: 20px; right: 20px; }
-.badge-status { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-.badge-status.blue { background: #EFF6FF; color: #3B82F6; }
-.badge-status.red { background: #FEF2F2; color: #EF4444; }
-.badge-status.green { background: #ECFDF5; color: #10B981; }
+.card-top-badge { position: absolute; top: 18px; right: 18px; }
+.badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.badge-status.blue { background: #EFF6FF; color: #0369A1; }
+.badge-status.red { background: #FEF2F2; color: #B91C1C; }
+.badge-status.green { background: #ECFDF5; color: #059669; }
 .badge-status .ic { font-size: 12px; }
 
 /* Card Main Content Layout */
@@ -992,11 +1102,11 @@ onMounted(async () => {
 /* Card Footer (Fees & Actions) */
 .card-footer { display: flex; justify-content: space-between; align-items: flex-end; }
 .footer-left { display: flex; flex-direction: column; gap: 8px; }
-.fee-row { display: flex; justify-content: space-between; width: 200px; font-size: 13px; }
+.fee-row { display: flex; align-items: center; gap: 12px; font-size: 13px; width: 100%; }
 .status-row { margin-top: 4px; }
-.fee-label { color: #6B7280; }
+.fee-label { color: #6B7280; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fee-label.red { color: #EF4444; }
-.fee-value { font-weight: 600; color: #111827; }
+.fee-value { font-weight: 600; color: #111827; white-space: nowrap; margin-left: 8px; }
 .fee-value.red { color: #EF4444; }
 
 .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
@@ -1068,4 +1178,9 @@ onMounted(async () => {
 .ext-fee-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
 .ext-fee-box .label { font-size: 12px; color: #374151; }
 .ext-fee-box .amount { font-size: 16px; font-weight: 600; color: #111827; }
+
+/* Placeholder when borrow tab has no list */
+.empty-borrow-placeholder { display: flex; align-items: center; justify-content: center; padding: 40px 0; min-height: 360px; }
+.empty-inner { text-align: center; }
+.empty-text { color: #9CA3AF; font-size: 16px; font-weight: 600; background: #fff; padding: 18px 24px; border-radius: 10px; border: 1px dashed #EEF0F3; }
 </style>
