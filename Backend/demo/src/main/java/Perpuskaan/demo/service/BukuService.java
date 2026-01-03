@@ -96,6 +96,7 @@ public class BukuService {
         try {
             Buku bukuBaru = new Buku();
             
+            
             // Set semua field dari request
             bukuBaru.setJudul(request.getJudul());
             bukuBaru.setIsbn(request.getIsbn());
@@ -142,7 +143,7 @@ public class BukuService {
     // Method ini dibuat private biar bisa dipanggil ulang oleh method search, get all, dll.
     private BukuSearchResponseDto convertToDto(Buku buku) {
         BukuSearchResponseDto dto = new BukuSearchResponseDto();
-
+        dto.setIdBuku(buku.getIdBuku());
         dto.setJudul(buku.getJudul());
         dto.setIsbn(buku.getIsbn());
         dto.setKategori(buku.getKategori());
