@@ -1,6 +1,5 @@
 <template>
   <div class="page">
-
     <!-- Loading -->
     <div v-if="loading" class="loading">Loading book details...</div>
 
@@ -12,42 +11,44 @@
 
     <!-- MAIN CONTENT -->
     <div v-else>
-
       <!-- Sticky Header -->
       <header class="sticky-header">
         <div class="header-inner">
-          <div class="mini-book">
-            <div class="mini-cover">
-              <img :src="book.urlGambarSampul" alt="cover" />
-            </div>
-            <div class="mini-meta">
-              <div class="mini-title">{{ book.judul }}</div>
-              <div class="mini-author">by {{ book.pengarang }}</div>
+          <div class="left-group">
+            <button class="back-btn" @click="goHome">
+              <span class="icon">←</span>
+              Back to Catalog
+            </button>
+            <div class="mini-book">
+              <div class="mini-cover">
+                <img :src="book.urlGambarSampul" alt="cover" />
+              </div>
+              <div class="mini-meta">
+                <div class="mini-title">{{ book.judul }}</div>
+                <div class="mini-author">by {{ book.pengarang }}</div>
+              </div>
             </div>
           </div>
 
-        <div class="header-actions">
-          <button class="btn btn-primary btn-sm borrowed-list-btn" @click="goToBorrowHistory">
-            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="2"/>
-              <line x1="8" y1="9" x2="16" y2="9" stroke="white" stroke-width="2"/>
-              <line x1="8" y1="13" x2="16" y2="13" stroke="white" stroke-width="2"/>
-              <line x1="8" y1="17" x2="16" y2="17" stroke="white" stroke-width="2"/>
-            </svg>
-            Show My Borrowed List
-          </button>
-
-        </div>
+          <div class="header-actions">
+            <button class="btn btn-primary btn-sm borrowed-list-btn" @click="goToBorrowHistory">
+              <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="2" />
+                <line x1="8" y1="9" x2="16" y2="9" stroke="white" stroke-width="2" />
+                <line x1="8" y1="13" x2="16" y2="13" stroke="white" stroke-width="2" />
+                <line x1="8" y1="17" x2="16" y2="17" stroke="white" stroke-width="2" />
+              </svg>
+              Show My Borrowed List
+            </button>
+          </div>
         </div>
       </header>
 
       <!-- Main Layout -->
       <main class="container">
-
         <div class="grid">
           <!-- LEFT CONTENT -->
           <div class="left-col">
-
             <!-- Hero -->
             <section class="hero">
               <div class="hero-cover">
@@ -61,22 +62,19 @@
 
                 <div class="price-stock">
                   <div class="price">IDR {{ formatCurrency(book.hargaSewa) }}</div>
-                  
                 </div>
 
                 <div class="hero-actions">
-                  <button class="btn btn-primary borrow-btn" @click="goToBorrowPage">
+                  <button class="btn btn-primary borrow-btn" :disabled="!canBorrow" @click="goToBorrowPage">
                     <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <rect x="4" y="3" width="16" height="18" rx="2" stroke="white" stroke-width="2"/>
-                      <line x1="4" y1="9" x2="20" y2="9" stroke="white" stroke-width="2"/>
+                      <rect x="4" y="3" width="16" height="18" rx="2" stroke="white" stroke-width="2" />
+                      <line x1="4" y1="9" x2="20" y2="9" stroke="white" stroke-width="2" />
                     </svg>
                     Borrow
                   </button>
 
                   <span class="stock-badge">{{ book.jumlahStok }} Pcs</span>
                 </div>
-
-
               </div>
             </section>
 
@@ -113,7 +111,6 @@
               </button>
 
               <div v-show="showAllDetails" class="details-grid">
-
                 <div class="detail-col">
                   <div class="detail-item">
                     <div class="detail-label">ISBN</div>
@@ -152,72 +149,27 @@
                     <div class="detail-value">{{ book.status }}</div>
                   </div>
                 </div>
-
               </div>
             </section>
 
             <div class="divider"></div>
 
-            <!-- ===== DUMMY REVIEWS (Tetap) ===== -->
-            <section class="block">
-              <h3 class="block-title">Reviews (3)</h3>
-
-              <button class="btn write-review">Write a Review</button>
-
-              <div class="review-list">
-
-                <div class="review-card" v-for="rev in reviews" :key="rev.id">
-                  <div class="review-head">
-                    <div class="review-user">
-                      <div class="review-name">{{ rev.name }}</div>
-                      <div class="review-stars">
-                        <span
-                          v-for="i in 5"
-                          :key="i"
-                          class="star"
-                          :class="{ full: i <= rev.rating }"
-                        >★</span>
-                      </div>
-                      <div class="review-date">{{ rev.date }}</div>
-                    </div>
-                  </div>
-
-                  <p class="review-text">{{ rev.text }}</p>
-                </div>
-
-              </div>
-            </section>
-
+            <!-- Reviews removed -->
           </div>
 
-          <!-- RIGHT SIDEBAR -->
+          <!-- RIGHT SIDEBAR (removed author card) -->
           <div class="right-col">
-
-            <!-- ===== DUMMY AUTHOR ===== -->
-            <div class="author-card">
-              <div class="author-head">
-                <h3>About the Author</h3>
-              </div>
-
-              <div class="author-name">{{ book.pengarang }}</div>
-
-              <p class="author-desc">
-                {{ dummyAuthorDesc }}
-              </p>
-            </div>
-
           </div>
         </div>
-
       </main>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 
 const route = useRoute();
 const router = useRouter();
@@ -227,44 +179,12 @@ const bookId = route.params.id;
 const book = ref(null);
 const loading = ref(true);
 const error = ref(null);
+const isBorrowedByUser = ref(false);
 
 // UI State
 const descExpanded = ref(false);
 const parsedCategories = ref([]);
 const showAllDetails = ref(false);
-
-// Dummy About Author
-const dummyAuthorDesc = ref(
-  "J.K. Rowling is the author of the seven Harry Potter books, first published between 1997 and 2007. The adventures of Harry, Ron and Hermione at Hogwarts School of Witchcraft and Wizardry have sold over 500 million copies, been translated into over 80 languages, and made into eight blockbuster films."
-);
-
-// Dummy Reviews
-const reviews = ref([
-  {
-    id: 1,
-    name: "Sarah M.",
-    rating: 5,
-    date: "2024-01-15",
-    text:
-      "An absolute masterpiece that launched a beloved series. Rowling’s world-building is incredible and Harry’s journey is both magical and deeply human. Perfect for readers of all ages.",
-  },
-  {
-    id: 2,
-    name: "BookLover42",
-    rating: 4,
-    date: "2024-01-10",
-    text:
-      "A delightful introduction to the wizarding world. While it starts more as a children’s book, it sets up the foundation for the increasingly complex stories to come.",
-  },
-  {
-    id: 3,
-    name: "Michael R.",
-    rating: 4,
-    date: "2024-01-05",
-    text:
-      "Re-reading this as an adult, I'm amazed by how well it holds up. The characters are memorable, the plot is engaging, and the magical elements are wonderfully imaginative.",
-  },
-]);
 
 // ===== Currency Formatter =====
 function formatCurrency(v) {
@@ -272,25 +192,51 @@ function formatCurrency(v) {
   return Number(v).toLocaleString("id-ID");
 }
 
-// ===== FETCH DATA (NO 403) =====
+// ===== FETCH DATA =====
 onMounted(async () => {
   try {
-    const res = await fetch(`http://localhost:8080/api/buku/${bookId}`);
+    const res = await axios.get(`/api/buku/${bookId}`);
 
-    if (!res.ok) throw new Error("Book not found");
+    book.value = res.data;
 
-    const data = await res.json();
-    book.value = data;
+    // After fetching book details, check whether current user already borrowed it
+    // and mark `isBorrowedByUser` accordingly.
+    try {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        const hres = await axios.get("/api/peminjaman/history");
+        const history = hres.data || [];
+        const title = (book.value?.judul || "").trim();
+        const activeBorrow = history.find((item) => {
+          const status = (item.status || "").toString().toUpperCase();
+          const isActive = status === "DIPINJAM" || status === "PINJAM" || status === "BORROWED";
+          const itemTitle = (item.judulBuku || "").trim();
+          return isActive && itemTitle && itemTitle === title;
+        });
+        isBorrowedByUser.value = !!activeBorrow;
+      } else {
+        isBorrowedByUser.value = false;
+      }
+    } catch (err) {
+      console.warn("Failed to check user borrow history:", err);
+      isBorrowedByUser.value = false;
+    }
 
-    parsedCategories.value = data.kategori
-      ? data.kategori.split(",").map((c) => c.trim())
-      : [];
-
+    parsedCategories.value = res.data.kategori ? res.data.kategori.split(",").map((c) => c.trim()) : [];
   } catch (err) {
-    error.value = err.message;
+    error.value = err.response?.data?.message || err.message || "Book not found";
   } finally {
     loading.value = false;
   }
+});
+
+const soldOut = computed(() => {
+  const s = Number(book.value?.jumlahStok ?? 0);
+  return isNaN(s) ? false : s <= 0;
+});
+
+const canBorrow = computed(() => {
+  return !soldOut.value && !isBorrowedByUser.value;
 });
 
 // ===== GO TO BORROW PAGE =====
@@ -302,7 +248,6 @@ function goToBorrowPage() {
     return router.push("/LoginPage");
   }
 
-  // Pass book ID in route so BorrowPage can use it
   router.push(`/BorrowPage/${bookId}?tab=borrow`);
 }
 
@@ -312,7 +257,13 @@ function goToBorrowHistory() {
 
   if (!token) return router.push("/LoginPage");
 
-  router.push(`/BorrowPage/${bookId}?tab=history`);
+  // Navigate to BorrowPage history view without passing the current book id
+  // to avoid accidentally triggering the borrow confirmation modal.
+  router.push(`/BorrowPage?tab=history`);
+}
+
+function goHome() {
+  router.push("/BookCatalog");
 }
 </script>
 
@@ -329,6 +280,14 @@ function goToBorrowHistory() {
   font-size: 12px;
 }
 
+/* Disabled state for borrow button */
+.borrow-btn:disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .stock-badge {
   display: inline-flex;
   align-items: center;
@@ -340,22 +299,24 @@ function goToBorrowHistory() {
 
   background: #ffffff;
   color: #1c7c31; /* hijau seperti gambar */
-  
+
   border: 1px solid #e5e5e5;
   border-radius: 12px;
 
   margin-left: 14px;
   white-space: nowrap;
 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* soft shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* soft shadow */
 }
 
-
-.loading, .error {
+.loading,
+.error {
   padding: 30px;
   text-align: center;
 }
-.error { color: red; }
+.error {
+  color: red;
+}
 
 .container {
   max-width: 1440px;
@@ -386,8 +347,8 @@ function goToBorrowHistory() {
 .sticky-header {
   position: fixed;
   inset: 0 0 auto 0;
-  background: rgba(255,255,255,0.95);
-  border-bottom: 1px solid rgba(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 50;
 }
 .header-inner {
@@ -397,6 +358,23 @@ function goToBorrowHistory() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-btn {
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #111827;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-right: 8px;
 }
 .mini-book {
   display: flex;
@@ -408,16 +386,24 @@ function goToBorrowHistory() {
   height: 56px;
   border-radius: 3.5px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .mini-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.mini-meta { display: flex; flex-direction: column; }
-.mini-title { font-size: 15px; }
-.mini-author { color: #717182; font-size: 12px; }
+.mini-meta {
+  display: flex;
+  flex-direction: column;
+}
+.mini-title {
+  font-size: 15px;
+}
+.mini-author {
+  color: #717182;
+  font-size: 12px;
+}
 
 /* ===== Hero ===== */
 .hero {
@@ -429,17 +415,31 @@ function goToBorrowHistory() {
   height: 336px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.12);
 }
 .hero-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.hero-info { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-.hero-title { font-size: 31px; margin: 0; }
-.hero-author { font-size: 17px; color: #717182; }
-.hero-published { font-size: 14px; color: #717182; }
+.hero-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hero-title {
+  font-size: 31px;
+  margin: 0;
+}
+.hero-author {
+  font-size: 17px;
+  color: #717182;
+}
+.hero-published {
+  font-size: 14px;
+  color: #717182;
+}
 
 .price-stock {
   display: flex;
@@ -474,7 +474,7 @@ function goToBorrowHistory() {
   color: white;
 }
 .btn-outline {
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 .btn-soft {
   background: #eceef2;
@@ -495,7 +495,18 @@ function goToBorrowHistory() {
 }
 .divider {
   height: 1px;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
+  display: block;
+  width: 100%;
+}
+
+/* On wide layouts make the divider extend into the right column so it reaches
+   the container's right edge while keeping the left edge aligned. The values
+   below match the right column width (420px) plus the grid gap (28px). */
+@media (min-width: 1100px) {
+  .divider {
+    width: calc(100% + 448px); /* 420px right-col + 28px grid gap */
+  }
 }
 
 /* Description */
@@ -562,63 +573,9 @@ function goToBorrowHistory() {
   font-size: 14px;
 }
 
-/* ===== DUMMY AUTHOR ===== */
-.author-card {
-  border: 1px solid rgba(0,0,0,0.1);
-  padding: 20px;
-  border-radius: 10px;
-  margin-top: 20px;
-}
-.author-name {
-  font-size: 15px;
-  margin-bottom: 8px;
-}
-.author-desc {
-  font-size: 13px;
-  line-height: 20px;
-  color: #717182;
-}
+/* Author card removed */
 
-/* ===== DUMMY REVIEWS ===== */
-.write-review {
-  margin-bottom: 15px;
-}
-
-.review-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.review-card {
-  border: 1px solid rgba(0,0,0,0.1);
-  padding: 18px;
-  border-radius: 10px;
-}
-
-.review-name {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.review-date {
-  font-size: 12px;
-  color: #717182;
-}
-
-.star {
-  color: #e0e0e0;
-  font-size: 14px;
-}
-.star.full {
-  color: #f5c518;
-}
-
-.review-text {
-  font-size: 13px;
-  margin-top: 8px;
-  line-height: 20px;
-}
+/* Reviews styles removed */
 
 /* Responsive */
 @media (max-width: 1100px) {
