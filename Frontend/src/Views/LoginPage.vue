@@ -156,7 +156,6 @@ import axios from "axios";
 
 const router = useRouter();
 const route = useRoute();
-const API_BASE = "http://localhost:8080/api/auth";
 
 const currentTab = ref("login");
 
@@ -197,7 +196,8 @@ function switchTab(tab) {
 // LOGIN HANDLER (REVISED AUTH)
 async function handleLogin() {
   try {
-    const res = await axios.post("http://localhost:8080/api/auth/login", 
+  
+    const res = await axios.post("/api/auth/login", 
       {
         username: loginUsername.value,
         password: loginPassword.value,
@@ -213,7 +213,13 @@ async function handleLogin() {
     sessionStorage.setItem("username", res.data.username);
     sessionStorage.setItem("userData", JSON.stringify(res.data));
     
-    router.push("/UserProfile");
+    // Redirect berdasarkan role
+    const userRole = res.data.role;
+    if (userRole === "ADMIN") {
+      router.push("/AdminPage");
+    } else {
+      router.push("/UserProfile");
+    }
 
   } catch (err) {
     const errorMsg = err.response?.data?.message || err.response?.data || "Server error";
@@ -262,7 +268,8 @@ async function handleRegister() {
   }
 
   try {
-    const res = await axios.post(`${API_BASE}/register`, {
+    // GUNAKAN PATH RELATIF
+    const res = await axios.post("/api/auth/register", {
       username: registerUsername.value.trim(),
       email: registerEmail.value.trim(),
       password: registerPassword.value,
